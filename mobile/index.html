@@ -102,26 +102,15 @@
       font-weight: 850;
     }
 
-    .brand-mark {
-      width: 34px;
-      height: 28px;
-      position: relative;
-      filter: drop-shadow(0 0 14px rgba(255,43,255,.7));
-    }
-
-    .brand-mark::before,
-    .brand-mark::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #ff2bff, #702bff 48%, #00eaff);
-      clip-path: polygon(0 100%, 18% 100%, 42% 28%, 62% 100%, 80% 100%, 48% 0);
-    }
-
-    .brand-mark::after {
-      transform: translateX(12px);
-      opacity: .72;
+    .brand-logo-img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      display: block;
+      flex: 0 0 auto;
+      filter:
+        drop-shadow(0 0 10px rgba(255, 43, 255, 0.55))
+        drop-shadow(0 0 12px rgba(0, 234, 255, 0.35));
     }
 
     .menu-btn {
@@ -783,7 +772,11 @@
   <div class="phone-shell">
     <header class="mobile-header">
       <a class="brand" href="#home">
-        <span class="brand-mark"></span>
+        <img
+          class="brand-logo-img"
+          src="https://res.cloudinary.com/dovrzmlqj/image/upload/v1778281428/my-company-logo_gavksa.png"
+          alt="Medios Accesible logo"
+        />
         <span>Medios Accesible</span>
       </a>
 
