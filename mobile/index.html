@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Medios Accesible | Mobile</title>
+  <meta name="description" content="Medios Accesible builds custom-coded websites, digital systems, client portals, SEO pages, and immersive digital experiences." />
+
+  <style>
+    :root {
+      --bg: #03030a;
+      --panel: rgba(11, 15, 31, 0.8);
+      --line: rgba(255,255,255,.13);
+      --text: #fff;
+      --muted: rgba(255,255,255,.68);
+      --cyan: #00eaff;
+      --purple: #9b35ff;
+      --pink: #ff2bff;
+      --green: #00ff88;
+      --radius: 20px;
+      --shadow-cyan: 0 0 26px rgba(0,234,255,.42);
+      --shadow-pink: 0 0 26px rgba(255,43,255,.36);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 20% 8%, rgba(255,43,255,.18), transparent 34%),
+        radial-gradient(circle at 86% 28%, rgba(0,234,255,.16), transparent 38%),
+        #03030a;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+
+    body.menu-open {
+      overflow: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+    }
+
+    .scroll-line {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0;
+      background: linear-gradient(90deg, var(--pink), var(--cyan));
+      box-shadow: var(--shadow-cyan);
+      z-index: 1000;
+    }
+
+    .phone-shell {
+      width: 100%;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mobile-header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 74px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: rgba(3, 5, 15, .72);
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: .95rem;
+      font-weight: 850;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 28px;
+      position: relative;
+      filter: drop-shadow(0 0 14px rgba(255,43,255,.7));
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ff2bff, #702bff 48%, #00eaff);
+      clip-path: polygon(0 100%, 18% 100%, 42% 28%, 62% 100%, 80% 100%, 48% 0);
+    }
+
+    .brand-mark::after {
+      transform: translateX(12px);
+      opacity: .72;
+    }
+
+    .menu-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,234,255,.34);
+      display: grid;
+      place-items: center;
+      background: rgba(0,0,0,.28);
+      box-shadow: inset 0 0 20px rgba(0,234,255,.07);
+    }
+
+    .hamburger {
+      width: 21px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .hamburger span {
+      height: 2px;
+      border-radius: 999px;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      transition: transform .25s ease, opacity .25s ease;
+    }
+
+    .menu-open .hamburger span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+
+    .menu-open .hamburger span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .menu-open .hamburger span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
+    }
+
+    .mobile-menu {
+      position: fixed;
+      inset: 74px 0 0 0;
+      z-index: 45;
+      background:
+        linear-gradient(rgba(3,5,15,.9), rgba(3,5,15,.96)),
+        radial-gradient(circle at 20% 20%, rgba(255,43,255,.2), transparent 34%),
+        radial-gradient(circle at 80% 50%, rgba(0,234,255,.18), transparent 34%);
+      transform: translateX(105%);
+      transition: transform .38s ease;
+      padding: 28px 20px;
+      border-left: 1px solid rgba(0,234,255,.2);
+    }
+
+    .menu-open .mobile-menu {
+      transform: translateX(0);
+    }
+
+    .mobile-menu nav {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mobile-menu a {
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      background: rgba(10,15,31,.72);
+      font-size: 1.15rem;
+      font-weight: 850;
+      transform: translateX(24px);
+      opacity: 0;
+    }
+
+    .menu-open .mobile-menu a {
+      animation: menuItem .42s ease both;
+    }
+
+    .menu-open .mobile-menu a:nth-child(1) { animation-delay: .08s; }
+    .menu-open .mobile-menu a:nth-child(2) { animation-delay: .14s; }
+    .menu-open .mobile-menu a:nth-child(3) { animation-delay: .2s; }
+    .menu-open .mobile-menu a:nth-child(4) { animation-delay: .26s; }
+    .menu-open .mobile-menu a:nth-child(5) { animation-delay: .32s; }
+
+    @keyframes menuItem {
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .hero {
+      min-height: 100vh;
+      padding: 116px 20px 34px;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .matrix {
+      position: absolute;
+      inset: 0;
+      z-index: -5;
+      opacity: .85;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -4;
+      background:
+        linear-gradient(to bottom, rgba(3,3,10,.35), rgba(3,3,10,.82) 55%, #03030a 100%),
+        radial-gradient(circle at 80% 58%, rgba(0,234,255,.25), transparent 34%),
+        radial-gradient(circle at 60% 64%, rgba(255,43,255,.23), transparent 34%);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -70px;
+      bottom: 120px;
+      width: 290px;
+      height: 210px;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse at 30% 75%, rgba(255,43,255,.72), transparent 44%),
+        radial-gradient(ellipse at 70% 72%, rgba(0,234,255,.64), transparent 50%);
+      filter: blur(22px);
+      animation: glowPulse 3.4s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      50% {
+        opacity: .45;
+        transform: scale(.93);
+      }
+    }
+
+    .hero-logo-art {
+      position: absolute;
+      right: -50px;
+      top: 36%;
+      width: 330px;
+      aspect-ratio: 1.25;
+      z-index: -1;
+      opacity: .7;
+      animation: floatArt 5.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 24px rgba(0,234,255,.62));
+    }
+
+    @keyframes floatArt {
+      0%, 100% {
+        transform: translateY(0) rotate(-4deg);
+      }
+
+      50% {
+        transform: translateY(-18px) rotate(4deg);
+      }
+    }
+
+    .hero-logo-art::before {
+      content: "";
+      position: absolute;
+      inset: 12%;
+      clip-path: polygon(5% 82%, 36% 38%, 48% 58%, 69% 12%, 96% 82%, 78% 82%, 67% 45%, 50% 82%, 37% 82%, 31% 64%, 18% 82%);
+      background: linear-gradient(135deg, rgba(255,43,255,.85), rgba(0,234,255,.85));
+      border: 2px solid rgba(255,255,255,.55);
+      box-shadow:
+        0 0 20px rgba(255,43,255,.75),
+        0 0 34px rgba(0,234,255,.7),
+        inset 0 0 28px rgba(255,255,255,.18);
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      font-size: .66rem;
+      font-weight: 900;
+      margin-bottom: 14px;
+      opacity: 0;
+      animation: rise .72s ease .2s both;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 15.5vw, 5.5rem);
+      line-height: .88;
+      letter-spacing: -.075em;
+      font-weight: 950;
+      text-shadow: 0 10px 34px rgba(0,0,0,.55);
+      opacity: 0;
+      animation: rise .72s ease .34s both;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, #ff2bff, #9b35ff, #00eaff);
+      -webkit-background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 16px rgba(0,234,255,.26));
+    }
+
+    .hero p {
+      margin-top: 20px;
+      color: rgba(255,255,255,.76);
+      line-height: 1.55;
+      font-size: .98rem;
+      max-width: 340px;
+      opacity: 0;
+      animation: rise .72s ease .48s both;
+    }
+
+    .hero strong {
+      color: var(--cyan);
+    }
+
+    .hero-actions {
+      display: grid;
+      gap: 12px;
+      margin-top: 28px;
+      opacity: 0;
+      animation: rise .72s ease .62s both;
+    }
+
+    .btn {
+      min-height: 56px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-weight: 900;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      transform: translateX(-120%);
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,.34), transparent);
+      transition: transform .6s ease;
+    }
+
+    .btn:active::before,
+    .btn:hover::before {
+      transform: translateX(120%);
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, #b82cff, #ff2bff 35%, #00eaff);
+      box-shadow: var(--shadow-pink);
+    }
+
+    .btn-secondary {
+      border: 1px solid rgba(0,234,255,.55);
+      background: rgba(0,0,0,.28);
+      box-shadow: inset 0 0 24px rgba(0,234,255,.08);
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(22px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 34px;
+    }
+
+    .feature-card {
+      min-height: 112px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      background: rgba(10,15,31,.76);
+      padding: 14px 8px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      animation: pop .48s ease both;
+    }
+
+    .feature-card:nth-child(1) { animation-delay: .76s; }
+    .feature-card:nth-child(2) { animation-delay: .86s; }
+    .feature-card:nth-child(3) { animation-delay: .96s; }
+    .feature-card:nth-child(4) { animation-delay: 1.06s; }
+    .feature-card:nth-child(5) { animation-delay: 1.16s; }
+    .feature-card:nth-child(6) { animation-delay: 1.26s; }
+
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: scale(.92) translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .icon {
+      width: 35px;
+      height: 35px;
+      margin: 0 auto 10px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: linear-gradient(135deg, rgba(255,43,255,.32), rgba(0,234,255,.18));
+      border: 1px solid rgba(255,255,255,.13);
+      color: white;
+      box-shadow: 0 0 20px rgba(255,43,255,.25);
+    }
+
+    .feature-card h3 {
+      font-size: .7rem;
+      line-height: 1.2;
+    }
+
+    .section {
+      padding: 54px 20px;
+      border-top: 1px solid rgba(255,255,255,.09);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 85% 12%, rgba(0,234,255,.08), transparent 30%);
+    }
+
+    .section > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    .section-kicker {
+      color: var(--cyan);
+      text-transform: uppercase;
+      font-size: .68rem;
+      font-weight: 900;
+      letter-spacing: .22em;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 10vw, 3.1rem);
+      line-height: .98;
+      letter-spacing: -.05em;
+      margin-bottom: 16px;
+    }
+
+    .lead {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: .96rem;
+      margin-bottom: 28px;
+    }
+
+    .pricing {
+      display: grid;
+      gap: 16px;
+    }
+
+    .price-card {
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 20px;
+      padding: 24px;
+      background: linear-gradient(180deg, rgba(14,20,42,.82), rgba(6,10,22,.88));
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .72s ease, transform .72s ease;
+    }
+
+    .price-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .price-card.popular {
+      border-color: rgba(255,43,255,.64);
+      box-shadow: var(--shadow-pink);
+    }
+
+    .badge {
+      position: absolute;
+      top: 0;
+      right: 20px;
+      padding: 6px 14px;
+      border-radius: 0 0 999px 999px;
+      background: linear-gradient(90deg, var(--pink), var(--purple));
+      font-size: .7rem;
+      font-weight: 900;
+    }
+
+    .price-card h3 {
+      color: var(--cyan);
+      margin-bottom: 6px;
+    }
+
+    .sub {
+      color: rgba(255,255,255,.52);
+      font-size: .8rem;
+    }
+
+    .price {
+      margin: 20px 0 16px;
+      font-size: 2rem;
+      font-weight: 950;
+      letter-spacing: -.05em;
+    }
+
+    .price span {
+      font-size: .72rem;
+      color: rgba(255,255,255,.5);
+      letter-spacing: 0;
+    }
+
+    ul {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      color: rgba(255,255,255,.72);
+      font-size: .88rem;
+      margin-bottom: 20px;
+    }
+
+    li::before {
+      content: "✦";
+      color: var(--cyan);
+      margin-right: 8px;
+    }
+
+    .mini-btn {
+      display: flex;
+      min-height: 48px;
+      border-radius: 12px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(0,234,255,.45);
+      font-weight: 850;
+    }
+
+    .portal-preview {
+      margin-top: 22px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 20px;
+      padding: 22px;
+      background: rgba(10,15,31,.82);
+      box-shadow: 0 18px 50px rgba(0,0,0,.35);
+    }
+
+    .portal-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: .78rem;
+    }
+
+    .live {
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .progress-row {
+      margin-bottom: 18px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 9px;
+      color: rgba(255,255,255,.74);
+      font-size: .8rem;
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.1);
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: var(--value);
+      background: linear-gradient(90deg, var(--purple), var(--pink), var(--cyan));
+      background-size: 200% 100%;
+      animation: shimmer 2.2s linear infinite;
+    }
+
+    @keyframes shimmer {
+      to { background-position: 200% 0; }
+    }
+
+    .service-stack,
+    .blog-stack,
+    .work-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .glass-card {
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 20px;
+      padding: 24px;
+      background: rgba(10,15,31,.76);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .72s ease, transform .72s ease;
+    }
+
+    .glass-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255,43,255,.14), transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(0,234,255,.12), transparent 34%);
+      pointer-events: none;
+    }
+
+    .glass-card > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    .number {
+      color: var(--cyan);
+      font-size: .75rem;
+      letter-spacing: .18em;
+      font-weight: 950;
+      margin-bottom: 16px;
+    }
+
+    .glass-card h3 {
+      font-size: 1.35rem;
+      margin-bottom: 12px;
+    }
+
+    .glass-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: .94rem;
+    }
+
+    .showcase {
+      min-height: 300px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 22px;
+      background:
+        linear-gradient(135deg, rgba(255,43,255,.2), transparent),
+        linear-gradient(225deg, rgba(0,234,255,.19), transparent),
+        rgba(10,15,31,.82);
+      padding: 24px;
+      display: flex;
+      align-items: end;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .showcase::before {
+      content: "";
+      position: absolute;
+      inset: 32px 20px 82px 20px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      transform: perspective(500px) rotateX(8deg) rotateY(-8deg);
+      box-shadow: 0 28px 60px rgba(0,0,0,.35);
+    }
+
+    .showcase-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .blog-image {
+      height: 118px;
+      border-radius: 16px;
+      margin-bottom: 18px;
+      background:
+        linear-gradient(135deg, rgba(255,43,255,.4), transparent),
+        linear-gradient(225deg, rgba(0,234,255,.4), transparent),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 1px, transparent 1px 14px),
+        #050914;
+    }
+
+    .contact-card {
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 22px;
+      background: rgba(10,15,31,.82);
+      padding: 24px;
+    }
+
+    form {
+      display: grid;
+      gap: 13px;
+      margin-top: 20px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 13px;
+      padding: 15px;
+      background: rgba(0,0,0,.28);
+      color: white;
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(0,234,255,.75);
+      box-shadow: 0 0 0 4px rgba(0,234,255,.1);
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    .footer {
+      padding: 30px 20px;
+      color: rgba(255,255,255,.52);
+      font-size: .8rem;
+      border-top: 1px solid rgba(255,255,255,.09);
+      display: grid;
+      gap: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="scroll-line" id="scrollLine"></div>
+
+  <div class="phone-shell">
+    <header class="mobile-header">
+      <a class="brand" href="#home">
+        <span class="brand-mark"></span>
+        <span>Medios Accesible</span>
+      </a>
+
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+        <span class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </button>
+    </header>
+
+    <aside class="mobile-menu" id="mobileMenu">
+      <nav>
+        <a href="#home">Home</a>
+        <a href="#services">Services</a>
+        <a href="#portfolio">Portfolio</a>
+        <a href="#blog">Blog</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="hero" id="home">
+        <canvas class="matrix" id="matrixRain"></canvas>
+        <div class="hero-logo-art"></div>
+
+        <div class="eyebrow">Custom code. Real systems.</div>
+
+        <h1>
+          Your business deserves more than
+          <span class="gradient-text">a template.</span>
+        </h1>
+
+        <p>
+          We build custom-coded websites, digital systems, and client portals that help your business grow —
+          with <strong>transparent service</strong> every step of the way.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#services">View Services →</a>
+          <a class="btn btn-secondary" href="#portfolio">See Custom-Coded Work &lt;/&gt;</a>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="icon">▣</div>
+            <h3>Custom-Coded Websites</h3>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">♙</div>
+            <h3>Client Portal</h3>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">◎</div>
+            <h3>Digital Presence</h3>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">◉</div>
+            <h3>Transparent Process</h3>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">↗</div>
+            <h3>Admin Systems</h3>
+          </article>
+
+          <article class="feature-card">
+            <div class="icon">⬡</div>
+            <h3>Immersive Visuals</h3>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="services">
+        <div class="section-kicker">Service Tiers</div>
+        <h2>Solutions for every stage of your growth.</h2>
+        <p class="lead">
+          Choose the perfect plan to launch, scale, and elevate your digital presence with custom-coded solutions.
+        </p>
+
+        <div class="pricing">
+          <article class="price-card reveal">
+            <h3>Launch</h3>
+            <p class="sub">Perfect for getting started</p>
+            <div class="price">$2,500 <span>One-Time</span></div>
+            <ul>
+              <li>Up to 5 pages</li>
+              <li>Responsive design</li>
+              <li>Basic SEO setup</li>
+              <li>Contact form</li>
+            </ul>
+            <a class="mini-btn" href="#contact">Get Started →</a>
+          </article>
+
+          <article class="price-card popular reveal">
+            <div class="badge">Most Popular</div>
+            <h3>Grow</h3>
+            <p class="sub">Built for growing businesses</p>
+            <div class="price">$5,500 <span>One-Time</span></div>
+            <ul>
+              <li>Up to 15 pages</li>
+              <li>Advanced interactions</li>
+              <li>Basic client portal</li>
+              <li>On-page SEO</li>
+            </ul>
+            <a class="mini-btn" href="#contact">Get Started →</a>
+          </article>
+
+          <article class="price-card reveal">
+            <h3>Scale</h3>
+            <p class="sub">Advanced. Powerful. Scalable.</p>
+            <div class="price">$9,500 <span>One-Time</span></div>
+            <ul>
+              <li>Unlimited pages</li>
+              <li>Custom systems</li>
+              <li>Advanced portal</li>
+              <li>Priority support</li>
+            </ul>
+            <a class="mini-btn" href="#contact">Get Started →</a>
+          </article>
+
+          <article class="price-card reveal">
+            <h3>Enterprise</h3>
+            <p class="sub">For complex digital ecosystems</p>
+            <div class="price">Custom</div>
+            <ul>
+              <li>Tailored solutions</li>
+              <li>Advanced integrations</li>
+              <li>White-label options</li>
+              <li>Dedicated support</li>
+            </ul>
+            <a class="mini-btn" href="#contact">Get Started →</a>
+          </article>
+        </div>
+
+        <aside class="portal-preview">
+          <div class="portal-top">
+            <strong>Client Portal Preview</strong>
+            <span class="live">● Live</span>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-label">
+              <span>Project Status</span>
+              <strong>75%</strong>
+            </div>
+            <div class="progress">
+              <span style="--value: 75%;"></span>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-label">
+              <span>Hours Used</span>
+              <strong>72%</strong>
+            </div>
+            <div class="progress">
+              <span style="--value: 72%;"></span>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-label">
+              <span>Buyout Amount</span>
+              <strong>$2,850</strong>
+            </div>
+            <div class="progress">
+              <span style="--value: 54%;"></span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section">
+        <div class="section-kicker">What We Build</div>
+        <h2>Services designed to make your business look serious.</h2>
+        <p class="lead">
+          Every service is built to help a business look better, communicate better, and convert more visitors into customers.
+        </p>
+
+        <div class="service-stack">
+          <article class="glass-card reveal">
+            <div class="number">01</div>
+            <h3>Websites</h3>
+            <p>Custom-coded landing pages, company websites, portfolio sites, ecommerce foundations, and SEO-ready layouts.</p>
+          </article>
+
+          <article class="glass-card reveal">
+            <div class="number">02</div>
+            <h3>Digital Systems</h3>
+            <p>Dashboards, booking flows, service request forms, customer intake systems, payment flows, and admin tools.</p>
+          </article>
+
+          <article class="glass-card reveal">
+            <div class="number">03</div>
+            <h3>Creative Assets</h3>
+            <p>Ad visuals, product graphics, social content, brand sections, campaign pages, and high-end digital experiences.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="portfolio">
+        <div class="section-kicker">Portfolio</div>
+        <h2>Custom-coded work that feels alive.</h2>
+        <p class="lead">
+          This section can show real client projects, live demos, rebuilds, and case studies.
+        </p>
+
+        <div class="work-stack">
+          <article class="showcase reveal">
+            <div class="showcase-content">
+              <h3>Immersive business landing page</h3>
+              <p>A bold visual system with animated code rain, service cards, conversion buttons, and a client portal preview.</p>
+            </div>
+          </article>
+
+          <article class="glass-card reveal">
+            <h3>Vape Shop Website</h3>
+            <p>Neon visuals, responsive layout, brand carousel, and premium local-business presentation.</p>
+          </article>
+
+          <article class="glass-card reveal">
+            <h3>Model Portfolio</h3>
+            <p>Clean image-focused portfolio with gallery pages, social links, and future admin workflow.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="blog">
+        <div class="section-kicker">Blog</div>
+        <h2>Education that sells your expertise.</h2>
+        <p class="lead">
+          Use blog posts to build SEO authority, explain your services, and answer questions before the client contacts you.
+        </p>
+
+        <div class="blog-stack">
+          <article class="glass-card reveal">
+            <div class="blog-image"></div>
+            <h3>Why custom code beats templates</h3>
+            <p>Explain performance, ownership, design freedom, SEO structure, and long-term scalability.</p>
+          </article>
+
+          <article class="glass-card reveal">
+            <div class="blog-image"></div>
+            <h3>What a client portal does</h3>
+            <p>Show how transparency, project stages, billing, and content review can keep clients engaged.</p>
+          </article>
+
+          <article class="glass-card reveal">
+            <div class="blog-image"></div>
+            <h3>How websites become systems</h3>
+            <p>Position your company as more than design: automations, dashboards, and growth infrastructure.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="contact">
+        <div class="section-kicker">Contact</div>
+        <h2>Ready to build something serious?</h2>
+        <p class="lead">
+          Replace the form action with your Formspree, Netlify, or backend endpoint.
+        </p>
+
+        <div class="contact-card">
+          <h3>Medios Accesible</h3>
+          <p class="lead" style="margin-top: 12px; margin-bottom: 0;">
+            Websites, digital systems, content infrastructure, SEO pages, and immersive branded experiences.
+          </p>
+
+          <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+            <input name="name" type="text" placeholder="Your name" required />
+            <input name="email" type="email" placeholder="Email address" required />
+            <input name="business" type="text" placeholder="Business name" />
+
+            <select name="service" required>
+              <option value="">Select service</option>
+              <option>Website</option>
+              <option>Client Portal</option>
+              <option>Digital System</option>
+              <option>SEO / Blog</option>
+              <option>Creative Assets</option>
+            </select>
+
+            <textarea name="message" placeholder="Tell me what you want to build..." required></textarea>
+
+            <button class="btn btn-primary" type="submit">Send Project Request →</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>© 2026 Medios Accesible. All rights reserved.</span>
+      <span>Custom-coded digital experiences.</span>
+    </footer>
+  </div>
+
+  <script>
+    const menuBtn = document.getElementById("menuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+
+    menuBtn.addEventListener("click", () => {
+      document.body.classList.toggle("menu-open");
+    });
+
+    mobileMenu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        document.body.classList.remove("menu-open");
+      });
+    });
+
+    const canvas = document.getElementById("matrixRain");
+    const ctx = canvas.getContext("2d");
+
+    let width;
+    let height;
+    let columns;
+    let drops;
+
+    const chars = "MEDIOSACCESIBLE010101{}[]<>/AIWEBSEO$#@UXSYSTEMS";
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      width = canvas.width = rect.width * window.devicePixelRatio;
+      height = canvas.height = rect.height * window.devicePixelRatio;
+      canvas.style.width = rect.width + "px";
+      canvas.style.height = rect.height + "px";
+      ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+
+      const fontSize = 15;
+      columns = Math.floor(rect.width / fontSize);
+      drops = Array.from({ length: columns }, () => Math.random() * -100);
+    }
+
+    function drawMatrix() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+
+      ctx.fillStyle = "rgba(3, 3, 10, 0.13)";
+      ctx.fillRect(0, 0, rect.width, rect.height);
+
+      ctx.font = "13px monospace";
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        const x = i * 15;
+        const y = drops[i] * 15;
+
+        const glow = Math.random();
+
+        if (glow > 0.985) {
+          ctx.fillStyle = "rgba(255, 43, 255, 0.95)";
+          ctx.shadowColor = "#ff2bff";
+          ctx.shadowBlur = 12;
+        } else if (glow > 0.94) {
+          ctx.fillStyle = "rgba(0, 234, 255, 0.95)";
+          ctx.shadowColor = "#00eaff";
+          ctx.shadowBlur = 12;
+        } else {
+          ctx.fillStyle = "rgba(235, 245, 255, 0.68)";
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.fillText(text, x, y);
+
+        if (y > rect.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+
+        drops[i] += 0.72 + Math.random() * 0.38;
+      }
+
+      requestAnimationFrame(drawMatrix);
+    }
+
+    resizeCanvas();
+    drawMatrix();
+
+    window.addEventListener("resize", resizeCanvas);
+
+    const revealItems = document.querySelectorAll(".reveal");
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+        }
+      });
+    }, {
+      threshold: 0.13
+    });
+
+    revealItems.forEach((item) => observer.observe(item));
+
+    const scrollLine = document.getElementById("scrollLine");
+
+    window.addEventListener("scroll", () => {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const percent = maxScroll > 0 ? (window.scrollY / maxScroll) * 100 : 0;
+      scrollLine.style.width = percent + "%";
+    });
+  </script>
+</body>
+</html>
