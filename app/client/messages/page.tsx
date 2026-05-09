@@ -291,26 +291,56 @@ export default function ClientMessagesPage() {
                 )}
               </div>
 
-              <form className="message-form" onSubmit={sendMessage}>
-                <textarea
-                  value={messageBody}
-                  onChange={(event) => setMessageBody(event.target.value)}
-                  placeholder="Write your message..."
-                />
+              <form className="message-form imessage-form" onSubmit={sendMessage}>
+                <div className="imessage-composer">
+                  <label className="imessage-photo-button" aria-label="Attach image">
+                    <input
+                      id="client-chat-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
 
-                <label className="file-picker">
-                  <span>{selectedImage ? selectedImage.name : "Attach image"}</span>
-                  <input
-                    id="client-chat-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 7h3l1.4-2h7.2L17 7h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
+                      <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                  </label>
+
+                  <textarea
+                    className="imessage-textarea"
+                    value={messageBody}
+                    onChange={(event) => setMessageBody(event.target.value)}
+                    placeholder="Message..."
+                    rows={1}
                   />
-                </label>
 
-                <button className="auth-submit" type="submit" disabled={sending}>
-                  {sending ? "Sending..." : "Send Message"}
-                </button>
+                  <button
+                    className="imessage-send-button"
+                    type="submit"
+                    disabled={sending}
+                    aria-label="Send message"
+                  >
+                    {sending ? "…" : "↑"}
+                  </button>
+                </div>
+
+                {selectedImage && (
+                  <div className="imessage-file-chip">
+                    <span>{selectedImage.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedImage(null);
+                        const fileInput = document.getElementById("client-chat-image") as HTMLInputElement | null;
+                        if (fileInput) fileInput.value = "";
+                      }}
+                      aria-label="Remove selected image"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
               </form>
             </>
           )}
