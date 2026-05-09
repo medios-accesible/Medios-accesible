@@ -242,10 +242,16 @@ export default function AdminDashboardPage() {
           </article>
 
           <article className="portal-card">
-            <h2>Next Step</h2>
+            <h2>Blog Manager</h2>
             <p>
-              Open a client workspace to message them, create projects, and update progress.
+              Create, update, delete, publish, upload backgrounds, and control the 3 blog previews on the homepage.
             </p>
+
+            <div className="portal-actions">
+              <Link className="portal-link" href="/admin/blogs">
+                Manage Blogs →
+              </Link>
+            </div>
           </article>
         </div>
       </section>
