@@ -26,8 +26,18 @@ type Message = {
   project_id: string;
   sender_id: string;
   body: string;
+  attachment_url: string | null;
+  attachment_type: string | null;
+  attachment_name: string | null;
   created_at: string;
 };
+
+const CHAT_BUCKET = "chat-attachments";
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+function cleanFileName(fileName: string) {
+  return fileName.replace(/[^a-zA-Z0-9._-]/g, "-").toLowerCase();
+}
 
 export default function ClientMessagesPage() {
   const router = useRouter();
@@ -36,9 +46,20 @@ export default function ClientMessagesPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageBody, setMessageBody] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+
+  async function fetchMessages(projectId: string) {
+    const { data: messageData } = await supabase
+      .from("messages")
+      .select("id, project_id, sender_id, body, attachment_url, attachment_type, attachment_name, created_at")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: true });
+
+    setMessages((messageData || []) as Message[]);
+  }
 
   async function loadMessages() {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -84,14 +105,7 @@ export default function ClientMessagesPage() {
     }
 
     setProject(projectData as Project);
-
-    const { data: messageData } = await supabase
-      .from("messages")
-      .select("id, project_id, sender_id, body, created_at")
-      .eq("project_id", projectData.id)
-      .order("created_at", { ascending: true });
-
-    setMessages((messageData || []) as Message[]);
+    await fetchMessages(projectData.id);
     setLoading(false);
   }
 
@@ -100,28 +114,108 @@ export default function ClientMessagesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function sendMessage(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] || null;
 
-    if (!project || !profile || !messageBody.trim()) return;
-
-    setSending(true);
-
-    const { error } = await supabase.from("messages").insert({
-      project_id: project.id,
-      sender_id: profile.id,
-      body: messageBody.trim()
-    });
-
-    setSending(false);
-
-    if (error) {
-      alert(error.message);
+    if (!file) {
+      setSelectedImage(null);
       return;
     }
 
-    setMessageBody("");
-    await loadMessages();
+    if (!file.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      event.target.value = "";
+      setSelectedImage(null);
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      alert("Image is too large. Use an image under 5 MB.");
+      event.target.value = "";
+      setSelectedImage(null);
+      return;
+    }
+
+    setSelectedImage(file);
+  }
+
+  async function uploadChatImage(projectId: string, senderId: string, file: File) {
+    const safeName = cleanFileName(file.name);
+    const filePath = `${projectId}/${senderId}/${Date.now()}-${safeName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(CHAT_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage.from(CHAT_BUCKET).getPublicUrl(filePath);
+
+    return {
+      url: data.publicUrl,
+      type: file.type,
+      name: file.name
+    };
+  }
+
+  async function sendMessage(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!project || !profile) return;
+
+    const trimmedBody = messageBody.trim();
+
+    if (!trimmedBody && !selectedImage) {
+      alert("Write a message or choose an image.");
+      return;
+    }
+
+    setSending(true);
+
+    try {
+      let attachmentUrl: string | null = null;
+      let attachmentType: string | null = null;
+      let attachmentName: string | null = null;
+
+      if (selectedImage) {
+        const uploaded = await uploadChatImage(project.id, profile.id, selectedImage);
+        attachmentUrl = uploaded.url;
+        attachmentType = uploaded.type;
+        attachmentName = uploaded.name;
+      }
+
+      const { error } = await supabase.from("messages").insert({
+        project_id: project.id,
+        sender_id: profile.id,
+        body: trimmedBody || (attachmentName ? `Uploaded ${attachmentName}` : ""),
+        attachment_url: attachmentUrl,
+        attachment_type: attachmentType,
+        attachment_name: attachmentName
+      });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      setMessageBody("");
+      setSelectedImage(null);
+
+      const fileInput = document.getElementById("client-chat-image") as HTMLInputElement | null;
+      if (fileInput) fileInput.value = "";
+
+      await fetchMessages(project.id);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Image upload failed.";
+      alert(message);
+    } finally {
+      setSending(false);
+    }
   }
 
   if (loading) {
@@ -174,7 +268,23 @@ export default function ClientMessagesPage() {
                         key={message.id}
                       >
                         <span>{isClient ? "You" : "Medios Accesible"}</span>
-                        <p>{message.body}</p>
+
+                        {message.body && <p>{message.body}</p>}
+
+                        {message.attachment_url && message.attachment_type?.startsWith("image/") && (
+                          <a
+                            href={message.attachment_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="message-attachment-link"
+                          >
+                            <img
+                              className="message-attachment"
+                              src={message.attachment_url}
+                              alt={message.attachment_name || "Chat attachment"}
+                            />
+                          </a>
+                        )}
                       </div>
                     );
                   })
@@ -186,8 +296,17 @@ export default function ClientMessagesPage() {
                   value={messageBody}
                   onChange={(event) => setMessageBody(event.target.value)}
                   placeholder="Write your message..."
-                  required
                 />
+
+                <label className="file-picker">
+                  <span>{selectedImage ? selectedImage.name : "Attach image"}</span>
+                  <input
+                    id="client-chat-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </label>
 
                 <button className="auth-submit" type="submit" disabled={sending}>
                   {sending ? "Sending..." : "Send Message"}
