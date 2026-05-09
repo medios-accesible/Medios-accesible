@@ -1377,3 +1377,343 @@ textarea:focus {
     margin-left: 0;
   }
 }
+
+/* =========================
+   CLIENT WORKSPACE / MESSAGING ADDITIONS
+   Added for admin client workspaces, private project messages, and image attachments
+========================= */
+
+.portal-actions {
+  margin-top: 20px;
+}
+
+.portal-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 234, 255, 0.38);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--cyan);
+  font-weight: 850;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.portal-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 234, 255, 0.8);
+  box-shadow: var(--shadow-cyan);
+}
+
+.portal-clickable {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.portal-grid-two {
+  grid-template-columns: 0.9fr 1.1fr;
+}
+
+.portal-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.portal-form h3 {
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.portal-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.portal-form input {
+  width: 100%;
+  color: #fff;
+  outline: none;
+  border: 1px solid rgba(0, 234, 255, 0.24);
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 13px;
+  padding: 15px 16px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.portal-form input:focus {
+  border-color: rgba(0, 234, 255, 0.75);
+  box-shadow: 0 0 0 4px rgba(0, 234, 255, 0.1);
+}
+
+.message-thread {
+  display: grid;
+  gap: 12px;
+  margin: 22px 0;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.message-thread::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-thread::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+.message-thread::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--pink), var(--cyan));
+  border-radius: 999px;
+}
+
+.message-bubble {
+  width: fit-content;
+  max-width: 78%;
+  border-radius: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.message-bubble span {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.message-bubble p {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.admin-message {
+  justify-self: end;
+  background: linear-gradient(135deg, rgba(0, 234, 255, 0.16), rgba(50, 109, 255, 0.12));
+  border-color: rgba(0, 234, 255, 0.28);
+}
+
+.admin-message span {
+  color: var(--cyan);
+}
+
+.client-message {
+  justify-self: start;
+  background: linear-gradient(135deg, rgba(255, 45, 255, 0.16), rgba(160, 52, 255, 0.12));
+  border-color: rgba(255, 45, 255, 0.28);
+}
+
+.client-message span {
+  color: var(--pink);
+}
+
+.message-form {
+  display: grid;
+  gap: 12px;
+}
+
+.message-attachment-link {
+  display: block;
+  margin-top: 10px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.message-attachment {
+  display: block;
+  width: min(100%, 320px);
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.message-bubble p + .message-attachment-link {
+  margin-top: 12px;
+}
+
+/* =========================
+   iMESSAGE-STYLE CHAT COMPOSER
+   Photo icon inside the text box with circular send button
+========================= */
+
+.imessage-form {
+  display: grid;
+  gap: 10px;
+}
+
+.imessage-composer {
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: end;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 28px;
+  border: 1px solid rgba(0, 234, 255, 0.3);
+  background:
+    linear-gradient(180deg, rgba(3, 8, 20, 0.92), rgba(1, 5, 14, 0.94));
+  box-shadow:
+    inset 0 0 18px rgba(0, 234, 255, 0.05),
+    0 0 22px rgba(0, 0, 0, 0.22);
+}
+
+.imessage-photo-button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  align-self: end;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 234, 255, 0.36);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--cyan);
+  cursor: pointer;
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+}
+
+.imessage-photo-button:hover {
+  transform: translateY(-1px) scale(1.03);
+  border-color: rgba(0, 234, 255, 0.78);
+  background: rgba(0, 234, 255, 0.1);
+  box-shadow: 0 0 18px rgba(0, 234, 255, 0.22);
+}
+
+.imessage-photo-button input {
+  display: none;
+}
+
+.imessage-photo-button svg {
+  width: 21px;
+  height: 21px;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.imessage-textarea {
+  min-height: 38px;
+  max-height: 140px;
+  width: 100%;
+  padding: 9px 6px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: #fff;
+  resize: none;
+  outline: none;
+  line-height: 1.35;
+  box-shadow: none;
+}
+
+.imessage-textarea:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.imessage-send-button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  align-self: end;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink), var(--cyan));
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 950;
+  line-height: 1;
+  box-shadow:
+    0 0 20px rgba(255, 45, 255, 0.26),
+    0 0 22px rgba(0, 234, 255, 0.22);
+  transition:
+    transform 0.22s ease,
+    opacity 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.imessage-send-button:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow:
+    0 0 26px rgba(255, 45, 255, 0.34),
+    0 0 28px rgba(0, 234, 255, 0.28);
+}
+
+.imessage-send-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.imessage-file-chip {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 234, 255, 0.32);
+  background: rgba(0, 234, 255, 0.08);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.82rem;
+}
+
+.imessage-file-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.imessage-file-chip button {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-weight: 900;
+}
+
+.imessage-file-chip button:hover {
+  background: rgba(255, 80, 120, 0.25);
+}
+
+@media (max-width: 900px) {
+  .portal-grid-two {
+    grid-template-columns: 1fr;
+  }
+
+  .message-bubble {
+    max-width: 100%;
+  }
+
+  .imessage-composer {
+    grid-template-columns: 38px 1fr 38px;
+    gap: 7px;
+  }
+
+  .imessage-photo-button,
+  .imessage-send-button {
+    width: 36px;
+    height: 36px;
+  }
+}
