@@ -23,11 +23,19 @@ type Project = {
   monthly_price: number | null;
 };
 
+type MessageNotification = {
+  id: string;
+  project_id: string;
+  sender_id: string;
+  read_at: string | null;
+};
+
 export default function ClientDashboardPage() {
   const router = useRouter();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,7 +73,24 @@ export default function ClientDashboardPage() {
         .eq("client_id", userId)
         .order("created_at", { ascending: false });
 
-      setProjects((projectData || []) as Project[]);
+      const loadedProjects = (projectData || []) as Project[];
+      setProjects(loadedProjects);
+
+      const projectIds = loadedProjects.map((project) => project.id);
+
+      if (projectIds.length > 0) {
+        const { data: unreadData } = await supabase
+          .from("messages")
+          .select("id, project_id, sender_id, read_at")
+          .in("project_id", projectIds)
+          .is("read_at", null)
+          .neq("sender_id", userId);
+
+        setUnreadMessages(((unreadData || []) as MessageNotification[]).length);
+      } else {
+        setUnreadMessages(0);
+      }
+
       setLoading(false);
     }
 
@@ -95,6 +120,12 @@ export default function ClientDashboardPage() {
             <p className="portal-kicker">Client Portal</p>
             <h1>Welcome, {profile?.full_name || profile?.company_name || "Client"}</h1>
             <p>{profile?.email}</p>
+
+            {unreadMessages > 0 && (
+              <div className="notification-summary">
+                {unreadMessages} unread message{unreadMessages === 1 ? "" : "s"}
+              </div>
+            )}
           </div>
 
           <div className="portal-header-actions">
@@ -131,12 +162,19 @@ export default function ClientDashboardPage() {
           </article>
 
           <article className="portal-card">
-            <h2>Messages</h2>
+            <h2>
+              Messages
+              {unreadMessages > 0 && (
+                <span className="notification-badge">{unreadMessages}</span>
+              )}
+            </h2>
             <p>Send project questions, updates, approvals, and requests directly to Medios Accesible.</p>
 
             <div className="portal-actions">
               <Link className="portal-link" href="/client/messages">
-                Open Messages →
+                {unreadMessages > 0
+                  ? `Open Messages (${unreadMessages} New) →`
+                  : "Open Messages →"}
               </Link>
             </div>
           </article>
