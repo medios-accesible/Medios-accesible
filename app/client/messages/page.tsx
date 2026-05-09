@@ -33,6 +33,12 @@ type Message = {
   created_at: string;
 };
 
+type DeveloperPresence = {
+  id: string;
+  is_logged_in: boolean | null;
+  last_seen_at: string | null;
+};
+
 const CHAT_BUCKET = "chat-attachments";
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
@@ -48,6 +54,7 @@ export default function ClientMessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageBody, setMessageBody] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [developerAtDesk, setDeveloperAtDesk] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -268,6 +275,15 @@ export default function ClientMessagesPage() {
               <p>
                 {project.stage} · {project.status} · {project.progress}%
               </p>
+
+              <div className={`developer-status-inline ${developerAtDesk ? "is-online" : "is-away"}`}>
+                <span className="developer-status-dot"></span>
+                <p>
+                  {developerAtDesk
+                    ? "Developer is currently at his desk. Message me here in the client portal."
+                    : "Developer is currently away from his desk. Please call or send email for a timely response."}
+                </p>
+              </div>
 
               <div className="message-thread">
                 {messages.length === 0 ? (
