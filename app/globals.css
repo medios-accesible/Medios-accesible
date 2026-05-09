@@ -1797,3 +1797,114 @@ textarea:focus {
     max-width: 100%;
   }
 }
+
+/* =========================
+   PROJECT UPDATE CONTROLS
+========================= */
+
+.project-update-form {
+  border-top-color: rgba(255, 45, 255, 0.2);
+}
+
+.project-update-form select {
+  width: 100%;
+  color: #fff;
+  outline: none;
+  border: 1px solid rgba(0, 234, 255, 0.24);
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 13px;
+  padding: 15px 16px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.project-update-form select:focus {
+  border-color: rgba(0, 234, 255, 0.75);
+  box-shadow: 0 0 0 4px rgba(0, 234, 255, 0.1);
+}
+
+.project-update-form option {
+  background: #050713;
+  color: #fff;
+}
+
+.project-update-form input[type="range"] {
+  padding: 0;
+  height: 34px;
+  accent-color: var(--cyan);
+}
+
+.portal-preview-link {
+  color: inherit;
+  transition: color 0.25s ease;
+}
+
+.portal-preview-link:hover {
+  color: var(--cyan);
+}
+
+.portal-preview-note {
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+/* =========================
+   DEVELOPER DESK STATUS
+========================= */
+
+.developer-status-card {
+  min-height: 220px;
+}
+
+.developer-status-line,
+.developer-status-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.developer-status-line {
+  margin: 12px 0 14px;
+}
+
+.developer-status-inline {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.developer-status-inline p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.developer-status-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 14px rgba(255, 209, 102, 0.65);
+}
+
+.is-online .developer-status-dot {
+  background: var(--green);
+  box-shadow: 0 0 14px rgba(0, 255, 136, 0.7);
+}
+
+.is-away .developer-status-dot {
+  background: var(--gold);
+  box-shadow: 0 0 14px rgba(255, 209, 102, 0.65);
+}
+
+.is-online .developer-status-line strong {
+  color: var(--green);
+}
+
+.is-away .developer-status-line strong {
+  color: var(--gold);
+}
