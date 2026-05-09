@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
@@ -125,7 +126,13 @@ export default function ClientDashboardPage() {
 
           <article className="portal-card">
             <h2>Messages</h2>
-            <p>Messaging is the next step. This dashboard is connected and protected.</p>
+            <p>Send project questions, updates, approvals, and requests directly to Medios Accesible.</p>
+
+            <div className="portal-actions">
+              <Link className="portal-link" href="/client/messages">
+                Open Messages →
+              </Link>
+            </div>
           </article>
 
           <article className="portal-card">
