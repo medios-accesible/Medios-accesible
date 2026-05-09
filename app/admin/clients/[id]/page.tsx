@@ -32,6 +32,7 @@ type Message = {
   attachment_url: string | null;
   attachment_type: string | null;
   attachment_name: string | null;
+  read_at: string | null;
   created_at: string;
 };
 
@@ -63,10 +64,19 @@ export default function AdminClientWorkspacePage() {
   const [savingProject, setSavingProject] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
 
-  async function fetchMessages(projectId: string) {
+  async function fetchMessages(projectId: string, currentAdminId = adminProfile?.id) {
+    if (currentAdminId) {
+      await supabase
+        .from("messages")
+        .update({ read_at: new Date().toISOString() })
+        .eq("project_id", projectId)
+        .is("read_at", null)
+        .neq("sender_id", currentAdminId);
+    }
+
     const { data: messageData } = await supabase
       .from("messages")
-      .select("id, project_id, sender_id, body, attachment_url, attachment_type, attachment_name, created_at")
+      .select("id, project_id, sender_id, body, attachment_url, attachment_type, attachment_name, read_at, created_at")
       .eq("project_id", projectId)
       .order("created_at", { ascending: true });
 
@@ -117,7 +127,7 @@ export default function AdminClientWorkspacePage() {
     setSelectedProject(firstProject);
 
     if (firstProject) {
-      await fetchMessages(firstProject.id);
+      await fetchMessages(firstProject.id, userId);
     } else {
       setMessages([]);
     }
@@ -256,7 +266,7 @@ export default function AdminClientWorkspacePage() {
       const fileInput = document.getElementById("admin-chat-image") as HTMLInputElement | null;
       if (fileInput) fileInput.value = "";
 
-      await fetchMessages(selectedProject.id);
+      await fetchMessages(selectedProject.id, adminProfile.id);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Image upload failed.";
       alert(message);
