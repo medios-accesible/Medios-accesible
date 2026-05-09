@@ -30,12 +30,19 @@ type MessageNotification = {
   read_at: string | null;
 };
 
+type DeveloperPresence = {
+  id: string;
+  is_logged_in: boolean | null;
+  last_seen_at: string | null;
+};
+
 export default function ClientDashboardPage() {
   const router = useRouter();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [developerAtDesk, setDeveloperAtDesk] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -90,6 +97,15 @@ export default function ClientDashboardPage() {
       } else {
         setUnreadMessages(0);
       }
+
+      const { data: presenceData } = await supabase
+        .from("developer_presence")
+        .select("id, is_logged_in, last_seen_at")
+        .eq("id", "main")
+        .maybeSingle();
+
+      const presence = presenceData as DeveloperPresence | null;
+      setDeveloperAtDesk(Boolean(presence?.is_logged_in));
 
       setLoading(false);
     }
@@ -179,9 +195,31 @@ export default function ClientDashboardPage() {
             </div>
           </article>
 
-          <article className="portal-card">
-            <h2>Billing</h2>
-            <p>Invoices and payment links will appear here.</p>
+          <article className={`portal-card developer-status-card ${developerAtDesk ? "is-online" : "is-away"}`}>
+            <h2>Developer Status</h2>
+
+            <div className="developer-status-line">
+              <span className="developer-status-dot"></span>
+              <strong>{developerAtDesk ? "At desk" : "Away from desk"}</strong>
+            </div>
+
+            <p>
+              {developerAtDesk
+                ? "The developer is currently at his desk. Message me in your client portal for the fastest response."
+                : "The developer is currently away from his desk. Please call or send email for a timely response."}
+            </p>
+
+            <div className="portal-actions">
+              {developerAtDesk ? (
+                <Link className="portal-link" href="/client/messages">
+                  Message Me →
+                </Link>
+              ) : (
+                <a className="portal-link" href="mailto:mediosaccesible@gmail.com">
+                  Send Email →
+                </a>
+              )}
+            </div>
           </article>
         </div>
       </section>
