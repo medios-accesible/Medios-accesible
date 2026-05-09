@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "../../../lib/supabaseClient";
+import { useEffect, useMemo, useState } from "react";
+import CodeRain from "./CodeRain";
+import { supabase } from "../lib/supabaseClient";
+import { siteContent, type FeatureIcon } from "../data/siteContent";
 
-type Profile = {
+type PortalRole = "admin" | "client" | null;
+
+type PortalProfile = {
   id: string;
   email: string;
   full_name: string | null;
@@ -13,40 +15,14 @@ type Profile = {
   role: "admin" | "client";
 };
 
-type Project = {
+type PortalProject = {
   id: string;
   title: string;
   status: string;
   stage: string;
   progress: number;
-};
-
-type Message = {
-  id: string;
-  project_id: string;
-  sender_id: string;
-  body: string;
-  attachment_url: string | null;
-  attachment_type: string | null;
-  attachment_name: string | null;
-  read_at: string | null;
-  created_at: string;
-};
-
-type ProjectUpdate = {
-  id: string;
-  project_id: string;
-  title: string;
-  summary: string;
-  update_type: string;
-  current_stage: string | null;
-  progress_snapshot: number | null;
-  completed_work: string | null;
-  next_steps: string | null;
-  client_action_needed: string | null;
-  blockers: string | null;
-  estimated_completion: string | null;
-  created_at: string;
+  plan: string | null;
+  monthly_price: number | null;
 };
 
 type DeveloperPresence = {
@@ -55,243 +31,477 @@ type DeveloperPresence = {
   last_seen_at: string | null;
 };
 
-const CHAT_BUCKET = "chat-attachments";
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+type BlogPreview = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  category: string | null;
+  background_url: string | null;
+  home_feature_order: number | null;
+};
 
-function cleanFileName(fileName: string) {
-  return fileName.replace(/[^a-zA-Z0-9._-]/g, "-").toLowerCase();
-}
 
-export default function ClientMessagesPage() {
-  const router = useRouter();
-
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [project, setProject] = useState<Project | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [projectUpdates, setProjectUpdates] = useState<ProjectUpdate[]>([]);
-  const [messageBody, setMessageBody] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [developerAtDesk, setDeveloperAtDesk] = useState(false);
-
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-
-  async function fetchMessages(projectId: string, currentUserId = profile?.id) {
-    if (currentUserId) {
-      await supabase
-        .from("messages")
-        .update({ read_at: new Date().toISOString() })
-        .eq("project_id", projectId)
-        .is("read_at", null)
-        .neq("sender_id", currentUserId);
-    }
-
-    const { data: messageData } = await supabase
-      .from("messages")
-      .select("id, project_id, sender_id, body, attachment_url, attachment_type, attachment_name, read_at, created_at")
-      .eq("project_id", projectId)
-      .order("created_at", { ascending: true });
-
-    setMessages((messageData || []) as Message[]);
-  }
-
-  async function loadMessages() {
-    const { data: sessionData } = await supabase.auth.getSession();
-
-    if (!sessionData.session?.user) {
-      router.push("/login");
-      return;
-    }
-
-    const userId = sessionData.session.user.id;
-
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("id, email, full_name, company_name, role")
-      .eq("id", userId)
-      .single();
-
-    if (!profileData) {
-      router.push("/login");
-      return;
-    }
-
-    if (profileData.role === "admin") {
-      router.push("/admin");
-      return;
-    }
-
-    setProfile(profileData as Profile);
-
-    const { data: projectData, error: projectError } = await supabase
-      .from("client_projects")
-      .select("id, title, status, stage, progress")
-      .eq("client_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (projectError || !projectData) {
-      setProject(null);
-      setMessages([]);
-      setLoading(false);
-      return;
-    }
-
-    setProject(projectData as Project);
-    await fetchMessages(projectData.id, userId);
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    loadMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] || null;
-
-    if (!file) {
-      setSelectedImage(null);
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      alert("Please choose an image file.");
-      event.target.value = "";
-      setSelectedImage(null);
-      return;
-    }
-
-    if (file.size > MAX_IMAGE_SIZE) {
-      alert("Image is too large. Use an image under 5 MB.");
-      event.target.value = "";
-      setSelectedImage(null);
-      return;
-    }
-
-    setSelectedImage(file);
-  }
-
-  async function uploadChatImage(projectId: string, senderId: string, file: File) {
-    const safeName = cleanFileName(file.name);
-    const filePath = `${projectId}/${senderId}/${Date.now()}-${safeName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from(CHAT_BUCKET)
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: false
-      });
-
-    if (uploadError) {
-      throw uploadError;
-    }
-
-    const { data } = supabase.storage.from(CHAT_BUCKET).getPublicUrl(filePath);
-
-    return {
-      url: data.publicUrl,
-      type: file.type,
-      name: file.name
-    };
-  }
-
-  async function sendMessage(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!project || !profile) return;
-
-    const trimmedBody = messageBody.trim();
-
-    if (!trimmedBody && !selectedImage) {
-      alert("Write a message or choose an image.");
-      return;
-    }
-
-    setSending(true);
-
-    try {
-      let attachmentUrl: string | null = null;
-      let attachmentType: string | null = null;
-      let attachmentName: string | null = null;
-
-      if (selectedImage) {
-        const uploaded = await uploadChatImage(project.id, profile.id, selectedImage);
-        attachmentUrl = uploaded.url;
-        attachmentType = uploaded.type;
-        attachmentName = uploaded.name;
-      }
-
-      const { error } = await supabase.from("messages").insert({
-        project_id: project.id,
-        sender_id: profile.id,
-        body: trimmedBody || (attachmentName ? `Uploaded ${attachmentName}` : ""),
-        attachment_url: attachmentUrl,
-        attachment_type: attachmentType,
-        attachment_name: attachmentName
-      });
-
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      setMessageBody("");
-      setSelectedImage(null);
-
-      const fileInput = document.getElementById("client-chat-image") as HTMLInputElement | null;
-      if (fileInput) fileInput.value = "";
-
-      await fetchMessages(project.id, profile.id);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Image upload failed.";
-      alert(message);
-    } finally {
-      setSending(false);
-    }
-  }
-
-  if (loading) {
+function Icon({ type }: { type: FeatureIcon }) {
+  if (type === "website") {
     return (
-      <main className="portal-page">
-        <section className="portal-card">
-          <p>Loading messages...</p>
-        </section>
-      </main>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="5" width="16" height="14" rx="2"></rect>
+        <path d="M8 9h8M8 13h5"></path>
+      </svg>
+    );
+  }
+
+  if (type === "client") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M5 20c1.4-4 12.6-4 14 0"></path>
+      </svg>
+    );
+  }
+
+  if (type === "shopping-bag") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 8h12l-1 12H7L6 8Z"></path>
+        <path d="M9 8V6a3 3 0 0 1 6 0v2"></path>
+      </svg>
+    );
+  }
+
+  if (type === "eye") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    );
+  }
+
+  if (type === "chart") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 19V9M10 19V5M16 19v-7M22 19H2"></path>
+        <path d="M4 9l6-4 6 7 6-5"></path>
+      </svg>
     );
   }
 
   return (
-    <main className="portal-page">
-      <section className="portal-shell">
-        <header className="portal-header">
-          <div>
-            <p className="portal-kicker">Client Messages</p>
-            <h1>Messages</h1>
-            <p>{profile?.email}</p>
-          </div>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2 21 7v10l-9 5-9-5V7l9-5Z"></path>
+      <path d="M12 22V12M3 7l9 5 9-5"></path>
+    </svg>
+  );
+}
 
-          <div className="portal-header-actions">
-            <Link className="portal-link" href="/">
-              Home
-            </Link>
+export default function DesktopHome() {
+  const [year, setYear] = useState("2026");
+  const [portalRole, setPortalRole] = useState<PortalRole>(null);
+  const [portalProfile, setPortalProfile] = useState<PortalProfile | null>(null);
+  const [portalProject, setPortalProject] = useState<PortalProject | null>(null);
+  const [portalLoading, setPortalLoading] = useState(true);
+  const [developerAtDesk, setDeveloperAtDesk] = useState(false);
+  const [homeBlogs, setHomeBlogs] = useState<BlogPreview[]>([]);
 
-            <Link className="portal-link" href="/client">
-              ← Client
-            </Link>
-          </div>
-        </header>
+  const navSections = useMemo(
+    () => ["home", "services", "portfolio", "blog", "contact"],
+    []
+  );
 
-        <article className="portal-card">
-          {!project ? (
-            <p>No project has been assigned yet. Messaging will activate after your project is created.</p>
-          ) : (
-            <>
-              <h2>{project.title}</h2>
+  const portalHref = portalRole === "admin" ? "/admin" : portalRole === "client" ? "/client" : "/login";
+  const portalButtonLabel = portalRole ? "Open Portal" : "Client Login";
+
+  useEffect(() => {
+    async function loadHomeBlogs() {
+      const { data } = await supabase
+        .from("blogs")
+        .select("id, title, slug, excerpt, category, background_url, home_feature_order")
+        .eq("is_published", true)
+        .eq("is_home_featured", true)
+        .order("home_feature_order", { ascending: true })
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      setHomeBlogs((data || []) as BlogPreview[]);
+    }
+
+    loadHomeBlogs();
+  }, []);
+
+  useEffect(() => {
+    async function loadDeveloperPresence() {
+      const { data: presenceData } = await supabase
+        .from("developer_presence")
+        .select("id, is_logged_in, last_seen_at")
+        .eq("id", "main")
+        .maybeSingle();
+
+      const presence = presenceData as DeveloperPresence | null;
+      setDeveloperAtDesk(Boolean(presence?.is_logged_in));
+    }
+
+    async function loadPortalSession() {
+      setPortalLoading(true);
+      await loadDeveloperPresence();
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData.session?.user;
+
+      if (!user) {
+        setPortalRole(null);
+        setPortalProfile(null);
+        setPortalProject(null);
+        setPortalLoading(false);
+        return;
+      }
+
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("id, email, full_name, company_name, role")
+        .eq("id", user.id)
+        .single();
+
+      if (!profileData) {
+        setPortalRole(null);
+        setPortalProfile(null);
+        setPortalProject(null);
+        setPortalLoading(false);
+        return;
+      }
+
+      const profile = profileData as PortalProfile;
+      setPortalProfile(profile);
+      setPortalRole(profile.role);
+
+      if (profile.role === "client") {
+        const { data: projectData } = await supabase
+          .from("client_projects")
+          .select("id, title, status, stage, progress, plan, monthly_price")
+          .eq("client_id", profile.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        setPortalProject((projectData || null) as PortalProject | null);
+      } else {
+        setPortalProject(null);
+      }
+
+      setPortalLoading(false);
+    }
+
+    loadPortalSession();
+    const presenceInterval = window.setInterval(loadDeveloperPresence, 45000);
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+      loadPortalSession();
+    });
+
+    return () => {
+      window.clearInterval(presenceInterval);
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+
+  useEffect(() => {
+    setYear(String(new Date().getFullYear()));
+
+    const revealItems = document.querySelectorAll(".reveal");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+          }
+        });
+      },
+      {
+        threshold: 0.12
+      }
+    );
+
+    revealItems.forEach((item) => observer.observe(item));
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const cards = document.querySelectorAll<HTMLElement>(".feature-card");
+
+    const cleanupFns: Array<() => void> = [];
+
+    cards.forEach((card) => {
+      const handlePointerMove = (event: PointerEvent) => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty("--x", `${event.clientX - rect.left}px`);
+        card.style.setProperty("--y", `${event.clientY - rect.top}px`);
+      };
+
+      card.addEventListener("pointermove", handlePointerMove);
+      cleanupFns.push(() => card.removeEventListener("pointermove", handlePointerMove));
+    });
+
+    return () => {
+      cleanupFns.forEach((cleanup) => cleanup());
+    };
+  }, []);
+
+  useEffect(() => {
+    const navLinks = document.querySelectorAll<HTMLAnchorElement>(".nav a");
+
+    const handleScroll = () => {
+      const current = window.scrollY + 160;
+
+      navSections.forEach((id) => {
+        const section = document.getElementById(id);
+        if (!section) return;
+
+        if (
+          current >= section.offsetTop &&
+          current < section.offsetTop + section.offsetHeight
+        ) {
+          navLinks.forEach((link) => link.classList.remove("active"));
+
+          const active = document.querySelector<HTMLAnchorElement>(
+            `.nav a[href="#${id}"]`
+          );
+
+          if (active) active.classList.add("active");
+        }
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [navSections]);
+
+  function handleContactSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+
+    const name = (form.elements.namedItem("name") as HTMLInputElement).value.trim();
+    const business = (form.elements.namedItem("business") as HTMLInputElement).value.trim();
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+    const budget = (form.elements.namedItem("budget") as HTMLInputElement).value.trim();
+    const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value.trim();
+
+    const subject = encodeURIComponent(`New Project Request from ${name}`);
+
+    const body = encodeURIComponent(`Name: ${name}
+Business: ${business}
+Email: ${email}
+Budget: ${budget}
+
+Project Details:
+${message}`);
+
+    window.location.href = `mailto:${siteContent.contact.email}?subject=${subject}&body=${body}`;
+  }
+
+  return (
+    <div className="site">
+      <header className="topbar">
+        <a className="brand" href="#home" aria-label="Medios Accesible Home">
+          <img
+            className="brand-logo-img"
+            src={siteContent.brand.logo}
+            alt="Medios Accesible logo"
+          />
+          <span>{siteContent.brand.name}</span>
+        </a>
+
+        <nav className="nav" aria-label="Main navigation">
+          <a className="active" href="#home">
+            Home
+          </a>
+          <a href="#services">Services</a>
+          <a href="#portfolio">Portfolio</a>
+          <a href="#blog">Blog</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <a className="login-btn" href={portalHref}>
+          {portalButtonLabel} ⊗
+        </a>
+      </header>
+
+      <main>
+        <section className="hero" id="home">
+          <img className="hero-bg-image" src={siteContent.hero.backgroundImage} alt="" />
+
+          <CodeRain />
+
+          <div className="hero-inner">
+            <div className="hero-copy">
+              <div className="eyebrow">{siteContent.hero.eyebrow}</div>
+
+              <h1>
+                {siteContent.hero.headlineLines.map((line) => (
+                  <span key={line}>
+                    {line}
+                    <br />
+                  </span>
+                ))}
+                <span className="gradient-text">{siteContent.hero.highlight}</span>
+              </h1>
+
               <p>
-                {project.stage} · {project.status} · {project.progress}%
+                We build custom-coded websites, digital systems, and client portals that
+                help your business grow — with <strong>transparent service</strong> every
+                step of the way.
               </p>
+
+              <div className="hero-actions">
+                <a className="btn btn-primary" href="#services">
+                  {siteContent.hero.primaryButton} <span>→</span>
+                </a>
+
+                <a className="btn btn-secondary" href="#portfolio">
+                  {siteContent.hero.secondaryButton} <span>&lt;/&gt;</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="feature-strip">
+            {siteContent.features.map((feature) => (
+              <article className="feature-card" key={feature.title}>
+                <div className="icon">
+                  <Icon type={feature.icon} />
+                </div>
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
+                <span className="feature-arrow">→</span>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="content-section" id="services">
+          <div className="tiers-grid">
+            <aside className="tiers-copy reveal">
+              <div className="kicker">{siteContent.pricingIntro.kicker}</div>
+              <h2>{siteContent.pricingIntro.title}</h2>
+              <p>{siteContent.pricingIntro.description}</p>
+            </aside>
+
+            <div className="pricing-grid">
+              {siteContent.pricing.map((plan) => (
+                <article
+                  className={`price-card reveal ${plan.popular ? "popular" : ""}`}
+                  key={plan.name}
+                >
+                  {plan.popular && <div className="badge">Most Popular</div>}
+
+                  <h3>{plan.name}</h3>
+                  <p className="sub">{plan.subtitle}</p>
+
+                  <div className="price">
+                    {plan.price} <span>{plan.term}</span>
+                  </div>
+
+                  <ul>
+                    {plan.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+
+                  <a className="mini-btn" href="#contact">
+                    Get Started →
+                  </a>
+                </article>
+              ))}
+            </div>
+
+            <aside className="portal-preview reveal" id="portal">
+              <div className="portal-top">
+                <strong>
+                  <a className="portal-preview-link" href={portalHref}>
+                    ‹ {portalRole === "admin" ? "Admin Portal" : portalRole === "client" ? "Your Client Portal" : "Client Portal Preview"}
+                  </a>
+                </strong>
+                <span className="live">{portalRole ? "Signed In" : "Live"}</span>
+              </div>
+
+              <div className="portal-columns">
+                <div className="progress-block">
+                  <div>
+                    <div className="meter-label">
+                      <span>{portalRole === "client" ? "Your Project" : "Project Status"}</span>
+                      <strong>
+                        {portalLoading
+                          ? "Loading"
+                          : portalProject
+                            ? portalProject.stage
+                            : portalRole === "admin"
+                              ? "Admin Access"
+                              : portalRole === "client"
+                                ? "No Project Yet"
+                                : "On Track"}
+                      </strong>
+                    </div>
+                    <div className="bar">
+                      <span style={{ width: `${portalProject?.progress ?? 75}%` }}></span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="meter-label">
+                      <span>{portalProject?.title || (portalRole === "admin" ? "Dashboard" : "Portal Access")}</span>
+                      <strong>{portalProject ? `${portalProject.progress}%` : portalRole ? "Ready" : "Preview"}</strong>
+                    </div>
+                    <div className="bar">
+                      <span style={{ width: `${portalProject?.progress ?? 72}%` }}></span>
+                    </div>
+                  </div>
+
+                  <div className="buyout">
+                    <span>{portalRole === "client" ? "Current Plan" : "Portal"}</span>
+                    <strong>
+                      {portalProject?.monthly_price
+                        ? `$${portalProject.monthly_price}/mo`
+                        : portalProject?.plan || (portalRole === "admin" ? "Admin" : "Login")}
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="queue">
+                  <div className="queue-title">
+                    {portalRole === "client"
+                      ? `Welcome ${portalProfile?.full_name || portalProfile?.company_name || "Client"}`
+                      : portalRole === "admin"
+                        ? "Admin Shortcuts"
+                        : "Content Queue"}
+                  </div>
+
+                  <div className="queue-row">
+                    <span>{portalProject?.title || "Home Page Update"}</span>
+                    <span>{portalProject?.status || "In Progress"}</span>
+                  </div>
+
+                  <div className="queue-row">
+                    <span>{portalRole === "client" ? "Private Messages" : portalRole === "admin" ? "Client Workspaces" : "New Service Page"}</span>
+                    <span className="pink">{portalRole ? "Open" : "Queued"}</span>
+                  </div>
+
+                  <div className="queue-row">
+                    <span>{portalRole === "client" ? "Project Updates" : portalRole === "admin" ? "Projects" : "Blog Post: 5 Ways..."}</span>
+                    <span className="gold">{portalRole ? "Live" : "Review"}</span>
+                  </div>
+
+                  <div className="queue-row">
+                    <span>{portalProfile?.email || "Case Study Upload"}</span>
+                    <span className="pink">{portalRole ? "Active" : "Queued"}</span>
+                  </div>
+                </div>
+              </div>
 
               <div className={`developer-status-inline ${developerAtDesk ? "is-online" : "is-away"}`}>
                 <span className="developer-status-dot"></span>
@@ -299,7 +509,7 @@ export default function ClientMessagesPage() {
                 <div>
                   <p>
                     {developerAtDesk
-                      ? "Developer is currently at his desk. Message me here in the client portal."
+                      ? "Developer is currently at his desk. Clients should message me in the client portal."
                       : "Developer is currently away from his desk. Please call or send email for a timely response."}
                   </p>
 
@@ -312,156 +522,212 @@ export default function ClientMessagesPage() {
                 </div>
               </div>
 
-              <div className="client-project-updates-panel">
-                <h3>Detailed Project Updates</h3>
+              {!portalRole && (
+                <p className="portal-preview-note">
+                  Preview data only. Sign in to see your real project updates.
+                </p>
+              )}
 
-                {projectUpdates.length === 0 ? (
-                  <p>No detailed project updates have been posted yet.</p>
-                ) : (
-                  <div className="project-updates-list">
-                    {projectUpdates.map((update) => (
-                      <div className="project-update-item" key={update.id}>
-                        <div className="project-update-meta">
-                          <span>{update.update_type}</span>
-                          <time>{new Date(update.created_at).toLocaleDateString()}</time>
-                        </div>
+              <a className="portal-btn" href={portalHref}>
+                {portalRole ? "Open Your Portal →" : "Go to Portal →"}
+              </a>
+            </aside>
+          </div>
+        </section>
 
-                        <h3>{update.title}</h3>
-                        <p>{update.summary}</p>
+        <section className="extra-section" id="portfolio">
+          <div className="section-head reveal">
+            <div>
+              <div className="kicker">Portfolio</div>
+              <h2>Custom-coded work that feels alive.</h2>
+            </div>
 
-                        {update.completed_work && (
-                          <div className="project-update-detail">
-                            <strong>Completed:</strong>
-                            <p>{update.completed_work}</p>
-                          </div>
-                        )}
+            <p>
+              Use this area to showcase client sites, landing pages, dashboards,
+              ecommerce builds, ads, visuals, and full digital systems.
+            </p>
+          </div>
 
-                        {update.next_steps && (
-                          <div className="project-update-detail">
-                            <strong>Next:</strong>
-                            <p>{update.next_steps}</p>
-                          </div>
-                        )}
+          <div className="service-grid">
+            <article className="service-card reveal">
+              <div className="service-number">01</div>
+              <h3>Animated Landing Pages</h3>
+              <p>
+                High-impact landing pages with custom motion, premium layout, and
+                conversion-focused structure.
+              </p>
+            </article>
 
-                        {update.client_action_needed && (
-                          <div className="project-update-detail highlight">
-                            <strong>Action needed from you:</strong>
-                            <p>{update.client_action_needed}</p>
-                          </div>
-                        )}
+            <article className="service-card reveal">
+              <div className="service-number">02</div>
+              <h3>Client Portals</h3>
+              <p>
+                Transparent systems for project status, billing, content queues,
+                messages, and active work stages.
+              </p>
+            </article>
 
-                        {update.blockers && (
-                          <div className="project-update-detail warning">
-                            <strong>Blockers:</strong>
-                            <p>{update.blockers}</p>
-                          </div>
-                        )}
+            <article className="service-card reveal">
+              <div className="service-number">03</div>
+              <h3>Digital Campaigns</h3>
+              <p>
+                Branded visuals, social content, ad pages, SEO pages, and digital
+                growth systems for businesses.
+              </p>
+            </article>
+          </div>
+        </section>
 
-                        {update.estimated_completion && (
-                          <div className="project-update-detail">
-                            <strong>Timing:</strong>
-                            <p>{update.estimated_completion}</p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+        <section className="extra-section" id="blog">
+          <div className="section-head reveal">
+            <div>
+              <div className="kicker">Blog</div>
+              <h2>Strategy that builds authority.</h2>
+            </div>
+
+            <p>
+              Blog pages help your company rank, explain your value, and turn visitors
+              into educated leads before they contact you.
+            </p>
+          </div>
+
+          <div className="service-grid blog-preview-grid">
+            {homeBlogs.length === 0 ? (
+              <>
+                <article className="service-card reveal">
+                  <div className="service-number">Insight</div>
+                  <h3>Why custom code beats templates</h3>
+                  <p>
+                    Custom code gives your company better control, cleaner structure,
+                    stronger visuals, and better scalability.
+                  </p>
+                </article>
+
+                <article className="service-card reveal">
+                  <div className="service-number">Systems</div>
+                  <h3>How portals create trust</h3>
+                  <p>
+                    Client portals give customers transparency, reduce confusion, and make
+                    your service feel more professional.
+                  </p>
+                </article>
+
+                <article className="service-card reveal">
+                  <div className="service-number">Growth</div>
+                  <h3>What makes a site rank better</h3>
+                  <p>
+                    Fast structure, service pages, SEO copy, clean headings, and clear
+                    internal links build a stronger search foundation.
+                  </p>
+                </article>
+              </>
+            ) : (
+              homeBlogs.map((blog) => (
+                <a className="service-card blog-preview-card reveal" href={`/blog/${blog.slug}`} key={blog.id}>
+                  {blog.background_url && (
+                    <img className="blog-preview-bg" src={blog.background_url} alt="" />
+                  )}
+
+                  <div className="service-number">
+                    {blog.category || "Blog"}
                   </div>
-                )}
-              </div>
 
-              <div className="message-thread">
-                {messages.length === 0 ? (
-                  <p>No messages yet.</p>
-                ) : (
-                  messages.map((message) => {
-                    const isClient = message.sender_id === profile?.id;
+                  <h3>{blog.title}</h3>
+                  <p>{blog.excerpt || "Read the full article from Medios Accesible."}</p>
 
-                    return (
-                      <div
-                        className={`message-bubble ${
-                          isClient ? "client-message" : "admin-message"
-                        }`}
-                        key={message.id}
-                      >
-                        <span>{isClient ? "You" : "Medios Accesible"}</span>
+                  <span className="feature-arrow">→</span>
+                </a>
+              ))
+            )}
+          </div>
 
-                        {message.body && <p>{message.body}</p>}
+          <div className="blog-section-action reveal">
+            <a className="portal-link" href="/blog">
+              View All Blogs →
+            </a>
+          </div>
+        </section>
 
-                        {message.attachment_url && message.attachment_type?.startsWith("image/") && (
-                          <a
-                            href={message.attachment_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="message-attachment-link"
-                          >
-                            <img
-                              className="message-attachment"
-                              src={message.attachment_url}
-                              alt={message.attachment_name || "Chat attachment"}
-                            />
-                          </a>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+        <section className="contact" id="contact">
+          <div className="contact-inner">
+            <aside className="contact-panel reveal">
+              <div className="kicker">Contact</div>
+              <h2>Ready to build something custom?</h2>
+              <p>
+                Send your project details and this form will open an email draft
+                addressed to Medios Accesible.
+              </p>
 
-              <form className="message-form imessage-form" onSubmit={sendMessage}>
-                <div className="imessage-composer">
-                  <label className="imessage-photo-button" aria-label="Attach image">
-                    <input
-                      id="client-chat-image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                    />
+              <ul className="contact-list">
+                <li>Custom-coded websites and landing pages</li>
+                <li>Client portals and transparent project systems</li>
+                <li>SEO-ready service pages and blog structures</li>
+                <li>Digital visuals, ads, and campaign assets</li>
+              </ul>
+            </aside>
 
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M4 7h3l1.4-2h7.2L17 7h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z"></path>
-                      <circle cx="12" cy="13" r="4"></circle>
-                    </svg>
-                  </label>
-
-                  <textarea
-                    className="imessage-textarea"
-                    value={messageBody}
-                    onChange={(event) => setMessageBody(event.target.value)}
-                    placeholder="Message..."
-                    rows={1}
-                  />
-
-                  <button
-                    className="imessage-send-button"
-                    type="submit"
-                    disabled={sending}
-                    aria-label="Send message"
-                  >
-                    {sending ? "…" : "↑"}
-                  </button>
+            <form className="contact-form reveal" onSubmit={handleContactSubmit}>
+              <div className="form-grid">
+                <div className="field">
+                  <label htmlFor="name">Name</label>
+                  <input id="name" name="name" type="text" placeholder="Your name" required />
                 </div>
 
-                {selectedImage && (
-                  <div className="imessage-file-chip">
-                    <span>{selectedImage.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedImage(null);
-                        const fileInput = document.getElementById("client-chat-image") as HTMLInputElement | null;
-                        if (fileInput) fileInput.value = "";
-                      }}
-                      aria-label="Remove selected image"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-              </form>
-            </>
-          )}
-        </article>
-      </section>
-    </main>
+                <div className="field">
+                  <label htmlFor="business">Business</label>
+                  <input
+                    id="business"
+                    name="business"
+                    type="text"
+                    placeholder="Business name"
+                  />
+                </div>
+
+                <div className="field">
+                  <label htmlFor="email">Email</label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+
+                <div className="field">
+                  <label htmlFor="budget">Budget</label>
+                  <input
+                    id="budget"
+                    name="budget"
+                    type="text"
+                    placeholder={siteContent.contact.budgetPlaceholder}
+                  />
+                </div>
+
+                <div className="field full">
+                  <label htmlFor="message">Project Details</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    placeholder="Tell me what you want to build..."
+                    required
+                  ></textarea>
+                </div>
+
+                <div className="field full">
+                  <button className="submit" type="submit">
+                    Send Project Request →
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <footer className="footer">
+        © <span>{year}</span> {siteContent.brand.name}. Custom-coded digital experiences.
+      </footer>
+    </div>
   );
 }
