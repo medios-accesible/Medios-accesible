@@ -36,6 +36,24 @@ type Message = {
   created_at: string;
 };
 
+type ProjectUpdate = {
+  id: string;
+  project_id: string;
+  author_id: string;
+  title: string;
+  summary: string;
+  update_type: string;
+  current_stage: string | null;
+  progress_snapshot: number | null;
+  completed_work: string | null;
+  next_steps: string | null;
+  client_action_needed: string | null;
+  blockers: string | null;
+  estimated_completion: string | null;
+  is_visible_to_client: boolean;
+  created_at: string;
+};
+
 const CHAT_BUCKET = "chat-attachments";
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
@@ -53,6 +71,7 @@ export default function AdminClientWorkspacePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [projectUpdates, setProjectUpdates] = useState<ProjectUpdate[]>([]);
 
   const [messageBody, setMessageBody] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -67,9 +86,20 @@ export default function AdminClientWorkspacePage() {
   const [editProjectPlan, setEditProjectPlan] = useState("");
   const [editProjectPrice, setEditProjectPrice] = useState("");
 
+  const [updateTitle, setUpdateTitle] = useState("Project Update");
+  const [updateSummary, setUpdateSummary] = useState("");
+  const [updateType, setUpdateType] = useState("general");
+  const [updateCompletedWork, setUpdateCompletedWork] = useState("");
+  const [updateNextSteps, setUpdateNextSteps] = useState("");
+  const [updateClientAction, setUpdateClientAction] = useState("");
+  const [updateBlockers, setUpdateBlockers] = useState("");
+  const [updateEstimatedCompletion, setUpdateEstimatedCompletion] = useState("");
+  const [updateVisibleToClient, setUpdateVisibleToClient] = useState(true);
+
   const [loading, setLoading] = useState(true);
   const [savingProject, setSavingProject] = useState(false);
   const [savingProjectUpdate, setSavingProjectUpdate] = useState(false);
+  const [savingTimelineUpdate, setSavingTimelineUpdate] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
 
   function syncProjectEditor(project: Project | null) {
@@ -112,6 +142,18 @@ export default function AdminClientWorkspacePage() {
       .order("created_at", { ascending: true });
 
     setMessages((messageData || []) as Message[]);
+  }
+
+  async function fetchProjectUpdates(projectId: string) {
+    const { data: updateData } = await supabase
+      .from("project_updates")
+      .select(
+        "id, project_id, author_id, title, summary, update_type, current_stage, progress_snapshot, completed_work, next_steps, client_action_needed, blockers, estimated_completion, is_visible_to_client, created_at"
+      )
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false });
+
+    setProjectUpdates((updateData || []) as ProjectUpdate[]);
   }
 
   async function loadWorkspace() {
@@ -160,8 +202,10 @@ export default function AdminClientWorkspacePage() {
 
     if (firstProject) {
       await fetchMessages(firstProject.id, userId);
+      await fetchProjectUpdates(firstProject.id);
     } else {
       setMessages([]);
+      setProjectUpdates([]);
     }
 
     setLoading(false);
@@ -190,6 +234,7 @@ export default function AdminClientWorkspacePage() {
     syncProjectEditor(project);
     setSelectedImage(null);
     await fetchMessages(project.id);
+    await fetchProjectUpdates(project.id);
   }
 
   async function createProject(event: React.FormEvent<HTMLFormElement>) {
@@ -261,6 +306,49 @@ export default function AdminClientWorkspacePage() {
         project.id === updatedProject.id ? updatedProject : project
       )
     );
+  }
+
+  async function createProjectUpdate(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!selectedProject || !adminProfile || !updateSummary.trim()) return;
+
+    setSavingTimelineUpdate(true);
+
+    const { error } = await supabase.from("project_updates").insert({
+      project_id: selectedProject.id,
+      author_id: adminProfile.id,
+      title: updateTitle.trim() || "Project Update",
+      summary: updateSummary.trim(),
+      update_type: updateType,
+      current_stage: selectedProject.stage,
+      progress_snapshot: selectedProject.progress,
+      completed_work: updateCompletedWork.trim() || null,
+      next_steps: updateNextSteps.trim() || null,
+      client_action_needed: updateClientAction.trim() || null,
+      blockers: updateBlockers.trim() || null,
+      estimated_completion: updateEstimatedCompletion.trim() || null,
+      is_visible_to_client: updateVisibleToClient
+    });
+
+    setSavingTimelineUpdate(false);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setUpdateTitle("Project Update");
+    setUpdateSummary("");
+    setUpdateType("general");
+    setUpdateCompletedWork("");
+    setUpdateNextSteps("");
+    setUpdateClientAction("");
+    setUpdateBlockers("");
+    setUpdateEstimatedCompletion("");
+    setUpdateVisibleToClient(true);
+
+    await fetchProjectUpdates(selectedProject.id);
   }
 
   function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -464,14 +552,26 @@ export default function AdminClientWorkspacePage() {
                 </label>
 
                 <label>
-                  Progress: {editProjectProgress}%
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={editProjectProgress}
-                    onChange={(event) => setEditProjectProgress(event.target.value)}
-                  />
+                  Progress
+                  <div className="project-progress-editor">
+                    <div className="meter-label">
+                      <span>{editProjectStage || "Current Progress"}</span>
+                      <strong>{editProjectProgress}%</strong>
+                    </div>
+
+                    <div className="bar project-progress-preview">
+                      <span style={{ width: `${editProjectProgress}%` }}></span>
+                    </div>
+
+                    <input
+                      className="project-progress-slider"
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={editProjectProgress}
+                      onChange={(event) => setEditProjectProgress(event.target.value)}
+                    />
+                  </div>
                 </label>
 
                 <label>
@@ -532,6 +632,179 @@ export default function AdminClientWorkspacePage() {
                 {savingProject ? "Creating..." : "Create Project"}
               </button>
             </form>
+          </article>
+
+          <article className="portal-card project-updates-card">
+            <h2>Transparent Project Updates</h2>
+
+            {!selectedProject ? (
+              <p>Select a project before posting updates.</p>
+            ) : (
+              <>
+                <p>
+                  Post detailed updates the client can read from their portal. Use this for full transparency:
+                  what changed, what is done, what is next, blockers, and what you need from the client.
+                </p>
+
+                <form className="portal-form project-update-post-form" onSubmit={createProjectUpdate}>
+                  <h3>Post Detailed Update</h3>
+
+                  <label>
+                    Update Title
+                    <input
+                      value={updateTitle}
+                      onChange={(event) => setUpdateTitle(event.target.value)}
+                      placeholder="Project Update"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    Update Type
+                    <select
+                      value={updateType}
+                      onChange={(event) => setUpdateType(event.target.value)}
+                    >
+                      <option value="general">General</option>
+                      <option value="milestone">Milestone</option>
+                      <option value="design">Design</option>
+                      <option value="development">Development</option>
+                      <option value="review">Review</option>
+                      <option value="billing">Billing</option>
+                      <option value="client-needed">Client Needed</option>
+                      <option value="blocked">Blocked</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Main Update / Summary
+                    <textarea
+                      value={updateSummary}
+                      onChange={(event) => setUpdateSummary(event.target.value)}
+                      placeholder="Explain clearly what changed, what was worked on, and the current situation..."
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    Completed Work
+                    <textarea
+                      value={updateCompletedWork}
+                      onChange={(event) => setUpdateCompletedWork(event.target.value)}
+                      placeholder="List what has been completed since the last update..."
+                    />
+                  </label>
+
+                  <label>
+                    Next Steps
+                    <textarea
+                      value={updateNextSteps}
+                      onChange={(event) => setUpdateNextSteps(event.target.value)}
+                      placeholder="Explain what you will work on next..."
+                    />
+                  </label>
+
+                  <label>
+                    Client Action Needed
+                    <textarea
+                      value={updateClientAction}
+                      onChange={(event) => setUpdateClientAction(event.target.value)}
+                      placeholder="Tell the client exactly what you need from them, if anything..."
+                    />
+                  </label>
+
+                  <label>
+                    Blockers / Delays
+                    <textarea
+                      value={updateBlockers}
+                      onChange={(event) => setUpdateBlockers(event.target.value)}
+                      placeholder="Mention anything slowing the project down. Leave blank if none."
+                    />
+                  </label>
+
+                  <label>
+                    Estimated Completion / Timing
+                    <input
+                      value={updateEstimatedCompletion}
+                      onChange={(event) => setUpdateEstimatedCompletion(event.target.value)}
+                      placeholder="Example: Friday afternoon, 2 business days, waiting on assets..."
+                    />
+                  </label>
+
+                  <label className="checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={updateVisibleToClient}
+                      onChange={(event) => setUpdateVisibleToClient(event.target.checked)}
+                    />
+                    Visible to client
+                  </label>
+
+                  <button className="auth-submit" type="submit" disabled={savingTimelineUpdate}>
+                    {savingTimelineUpdate ? "Posting..." : "Post Transparent Update"}
+                  </button>
+                </form>
+
+                <div className="project-updates-list">
+                  {projectUpdates.length === 0 ? (
+                    <p>No project updates posted yet.</p>
+                  ) : (
+                    projectUpdates.map((update) => (
+                      <div className="project-update-item" key={update.id}>
+                        <div className="project-update-meta">
+                          <span>{update.update_type}</span>
+                          <time>{new Date(update.created_at).toLocaleDateString()}</time>
+                        </div>
+
+                        <h3>
+                          {update.title}
+                          {!update.is_visible_to_client && (
+                            <span className="private-update-label">Private</span>
+                          )}
+                        </h3>
+
+                        <p>{update.summary}</p>
+
+                        {update.completed_work && (
+                          <div className="project-update-detail">
+                            <strong>Completed:</strong>
+                            <p>{update.completed_work}</p>
+                          </div>
+                        )}
+
+                        {update.next_steps && (
+                          <div className="project-update-detail">
+                            <strong>Next:</strong>
+                            <p>{update.next_steps}</p>
+                          </div>
+                        )}
+
+                        {update.client_action_needed && (
+                          <div className="project-update-detail highlight">
+                            <strong>Client needed:</strong>
+                            <p>{update.client_action_needed}</p>
+                          </div>
+                        )}
+
+                        {update.blockers && (
+                          <div className="project-update-detail warning">
+                            <strong>Blockers:</strong>
+                            <p>{update.blockers}</p>
+                          </div>
+                        )}
+
+                        {update.estimated_completion && (
+                          <div className="project-update-detail">
+                            <strong>Timing:</strong>
+                            <p>{update.estimated_completion}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
           </article>
 
           <article className="portal-card">
