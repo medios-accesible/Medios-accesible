@@ -41,7 +41,6 @@ export default function AdminDashboardPage() {
   const [totalUnread, setTotalUnread] = useState(0);
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
     async function setDeveloperLoggedIn() {
       await supabase.from("developer_presence").upsert({
@@ -152,11 +151,11 @@ export default function AdminDashboardPage() {
 
   return (
     <main className="portal-page">
-      <section className="portal-shell">
-        <header className="portal-header">
+      <section className="portal-shell admin-shell-wide">
+        <header className="portal-header admin-dashboard-header">
           <div>
             <p className="portal-kicker">Admin Dashboard</p>
-            <h1>Medios Accesible Admin</h1>
+            <h1>Medios Accesible Command Center</h1>
             <p>{adminProfile?.email}</p>
 
             {totalUnread > 0 && (
@@ -175,18 +174,34 @@ export default function AdminDashboardPage() {
           </div>
         </header>
 
-        <div className="portal-grid">
-          <article className="portal-card">
-            <h2>
-              Clients
-              {totalUnread > 0 && <span className="notification-badge">{totalUnread}</span>}
-            </h2>
+        <nav className="admin-module-tabs" aria-label="Admin sections">
+          <Link href="/admin" className="active">Overview</Link>
+          <Link href="/admin/clients">Clients</Link>
+          <Link href="/admin/blogs">Blogs</Link>
+          <Link href="/admin/services">Services</Link>
+        </nav>
+
+        <div className="admin-overview-grid">
+          <article className="portal-card admin-overview-card">
+            <div className="admin-card-head">
+              <div>
+                <p className="portal-kicker">Client Workspaces</p>
+                <h2>
+                  Clients
+                  {totalUnread > 0 && <span className="notification-badge">{totalUnread}</span>}
+                </h2>
+              </div>
+
+              <Link className="portal-link" href="/admin/clients">
+                View All →
+              </Link>
+            </div>
 
             {clients.length === 0 ? (
               <p>No client accounts yet.</p>
             ) : (
               <div className="portal-list">
-                {clients.map((client) => {
+                {clients.slice(0, 4).map((client) => {
                   const unreadCount = unreadByClient[client.id] || 0;
 
                   return (
@@ -210,22 +225,62 @@ export default function AdminDashboardPage() {
                 })}
               </div>
             )}
+          </article>
 
-            <div className="portal-actions">
-              <Link className="portal-link" href="/admin/clients">
-                View All Clients →
+          <article className="portal-card admin-overview-card">
+            <div className="admin-card-head">
+              <div>
+                <p className="portal-kicker">Pricing + Offers</p>
+                <h2>Services</h2>
+              </div>
+
+              <Link className="portal-link" href="/admin/services">
+                Manage →
               </Link>
+            </div>
+
+            <p>
+              Edit service tiers, monthly pricing, annual pricing, included services,
+              service limits, buyout pricing, add-ons, and public service descriptions.
+            </p>
+
+            <div className="admin-module-list">
+              <span>Plan tiers</span>
+              <span>Add-on services</span>
+              <span>Public services page</span>
             </div>
           </article>
 
-          <article className="portal-card">
-            <h2>Projects</h2>
+          <article className="portal-card admin-overview-card">
+            <div className="admin-card-head">
+              <div>
+                <p className="portal-kicker">Content</p>
+                <h2>Blog Manager</h2>
+              </div>
+
+              <Link className="portal-link" href="/admin/blogs">
+                Manage →
+              </Link>
+            </div>
+
+            <p>
+              Create, edit, delete, publish, upload blog backgrounds, and control the 3 blog previews on the homepage.
+            </p>
+          </article>
+
+          <article className="portal-card admin-overview-card">
+            <div className="admin-card-head">
+              <div>
+                <p className="portal-kicker">Project Snapshot</p>
+                <h2>Active Projects</h2>
+              </div>
+            </div>
 
             {projects.length === 0 ? (
               <p>No projects created yet.</p>
             ) : (
               <div className="portal-list">
-                {projects.map((project) => (
+                {projects.slice(0, 5).map((project) => (
                   <div className="portal-list-item" key={project.id}>
                     <div>
                       <h3>{project.title}</h3>
@@ -239,19 +294,6 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
             )}
-          </article>
-
-          <article className="portal-card">
-            <h2>Blog Manager</h2>
-            <p>
-              Create, update, delete, publish, upload backgrounds, and control the 3 blog previews on the homepage.
-            </p>
-
-            <div className="portal-actions">
-              <Link className="portal-link" href="/admin/blogs">
-                Manage Blogs →
-              </Link>
-            </div>
           </article>
         </div>
       </section>
