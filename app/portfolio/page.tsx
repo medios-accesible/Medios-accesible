@@ -151,7 +151,7 @@ export default function PortfolioPage() {
           <Link href="/services">Services</Link>
           <Link className="active" href="/portfolio">Portfolio</Link>
           <Link href="/blog">Blog</Link>
-          <Link href="/#contact">Contact</Link>
+          <Link href="/contact">Contact</Link>
         </nav>
 
         <Link className="login-btn" href="/login">
@@ -181,7 +181,7 @@ export default function PortfolioPage() {
           </p>
 
           <div className="hero-actions">
-            <Link className="btn btn-primary" href="/#contact">
+            <Link className="btn btn-primary" href="/contact">
               Start a Project <span>→</span>
             </Link>
 
@@ -243,7 +243,7 @@ export default function PortfolioPage() {
           <p>We build custom solutions that drive real results.</p>
         </div>
 
-        <Link className="btn btn-primary" href="/#contact">
+        <Link className="btn btn-primary" href="/contact">
           Get in Touch <span>→</span>
         </Link>
       </section>
@@ -268,7 +268,7 @@ export default function PortfolioPage() {
           <Link href="/services">Services</Link>
           <Link href="/portfolio">Portfolio</Link>
           <Link href="/blog">Blog</Link>
-          <Link href="/#contact">Contact</Link>
+          <Link href="/contact">Contact</Link>
         </div>
 
         <div>
