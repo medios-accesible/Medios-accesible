@@ -111,13 +111,14 @@ export default function ServicesPage() {
 
           if (entry.isIntersecting) {
             card.classList.add("code-built");
-            observer.unobserve(card);
+          } else {
+            card.classList.remove("code-built");
           }
         });
       },
       {
-        threshold: 0.36,
-        rootMargin: "0px 0px -12% 0px"
+        threshold: 0.28,
+        rootMargin: "0px 0px -8% 0px"
       }
     );
 
@@ -326,10 +327,20 @@ export default function ServicesPage() {
         <div className="addon-grid-playground">
           {addons.map((addon, index) => (
             <article
-              className="addon-card-playground reveal"
+              className="addon-card-playground code-build-card reveal"
+              data-code-build-card
               style={{ "--delay": `${index * 45}ms` } as React.CSSProperties}
               key={addon.id}
             >
+              <div className="code-build-overlay addon-code-overlay" aria-hidden="true">
+                <span>{`const addon = "${addon.name}";`}</span>
+                <span>{`pricing = "${addon.price_label}";`}</span>
+                <span>{`status = "available";`}</span>
+                <span>{`render.addOnCard();`}</span>
+              </div>
+
+              <div className="code-build-border" aria-hidden="true"></div>
+
               <h3>{addon.name}</h3>
               <strong>{addon.price_label}</strong>
               {addon.description && <p>{addon.description}</p>}
