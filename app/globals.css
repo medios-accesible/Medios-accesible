@@ -1,3 +1,4 @@
+
 :root {
   --bg: #02040c;
   --black: #03040a;
@@ -8351,5 +8352,111 @@ textarea:focus {
     opacity: 1;
     transform: translateY(0) scale(1);
     filter: none;
+  }
+}
+
+/* =========================================================
+   ALL MOBILE PAGE FOOTER SIMPLE BRAND/COPYRIGHT TREATMENT
+   Keeps desktop footers intact. Mobile shows only centered logo + 2021 copyright.
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .mobile-footer.mobile-footer-simple,
+  .blog-footer-revamp,
+  .portfolio-footer-revamp,
+  .contact-footer-revamp,
+  .services-footer-playground.services-footer-simple {
+    width: calc(100% - 32px) !important;
+    margin: 0 auto !important;
+    padding: 46px 0 58px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 14px !important;
+    text-align: center !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: transparent !important;
+  }
+
+  .blog-footer-revamp > div:not(:first-child),
+  .portfolio-footer-revamp > div:not(:first-child),
+  .contact-footer-revamp > div:not(:first-child) {
+    display: none !important;
+  }
+
+  .blog-footer-revamp > div:first-child,
+  .portfolio-footer-revamp > div:first-child,
+  .contact-footer-revamp > div:first-child {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .blog-footer-revamp .brand,
+  .portfolio-footer-revamp .brand,
+  .contact-footer-revamp .brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    text-decoration: none !important;
+  }
+
+  .blog-footer-revamp .brand-logo-img,
+  .portfolio-footer-revamp .brand-logo-img,
+  .contact-footer-revamp .brand-logo-img,
+  .mobile-footer-logo-only img,
+  .services-footer-logo-only img {
+    display: block !important;
+    width: min(72vw, 260px) !important;
+    height: auto !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 0 26px rgba(0, 229, 255, 0.22)) !important;
+  }
+
+  .blog-footer-revamp .brand span,
+  .portfolio-footer-revamp .brand span,
+  .contact-footer-revamp .brand span,
+  .blog-footer-revamp > div:first-child > p,
+  .portfolio-footer-revamp > div:first-child > p,
+  .contact-footer-revamp > div:first-child > p,
+  .mobile-footer.mobile-footer-simple > div,
+  .mobile-footer.mobile-footer-simple > p:not(.mobile-footer-copyright) {
+    display: none !important;
+  }
+
+  .blog-footer-revamp::after,
+  .portfolio-footer-revamp::after,
+  .contact-footer-revamp::after {
+    content: "© 2021 Medios Accesible. All rights reserved.";
+    display: block;
+    max-width: 28ch;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  .mobile-footer-logo-only,
+  .services-footer-logo-only {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+  }
+
+  .mobile-footer-copyright,
+  .services-footer-copyright {
+    max-width: 28ch !important;
+    margin: 0 auto !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 0.86rem !important;
+    line-height: 1.5 !important;
   }
 }
