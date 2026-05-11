@@ -59,7 +59,7 @@ export default function ServicesPage() {
   const [plans, setPlans] = useState<ServicePlan[]>([]);
   const [addons, setAddons] = useState<ServiceAddon[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<ServicePlan | null>(null);
-  const [pressedPlanId, setPressedPlanId] = useState<string | null>(null);
+  const [builtCardKeys, setBuiltCardKeys] = useState<Set<string>>(() => new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -88,12 +88,12 @@ export default function ServicesPage() {
 
   function closeSelectedPlan() {
     setSelectedPlan(null);
-    setPressedPlanId(null);
 
-    window.requestAnimationFrame(() => {
-      document
-        .querySelectorAll<HTMLElement>("[data-code-build-card]")
-        .forEach((card) => card.classList.add("code-built"));
+    setBuiltCardKeys((previousKeys) => {
+      const nextKeys = new Set(previousKeys);
+      plans.forEach((plan) => nextKeys.add(`plan-${plan.id}`));
+      addons.forEach((addon) => nextKeys.add(`addon-${addon.id}`));
+      return nextKeys;
     });
   }
 
@@ -120,13 +120,32 @@ export default function ServicesPage() {
 
       observer = new IntersectionObserver(
         (entries) => {
+          const visibleKeys: string[] = [];
+
           entries.forEach((entry) => {
             const card = entry.target as HTMLElement;
+            const cardKey = card.dataset.codeBuildKey;
 
-            if (entry.isIntersecting) {
-              card.classList.add("code-built");
+            if (entry.isIntersecting && cardKey) {
+              visibleKeys.push(cardKey);
             }
           });
+
+          if (visibleKeys.length > 0) {
+            setBuiltCardKeys((previousKeys) => {
+              let changed = false;
+              const nextKeys = new Set(previousKeys);
+
+              visibleKeys.forEach((key) => {
+                if (!nextKeys.has(key)) {
+                  nextKeys.add(key);
+                  changed = true;
+                }
+              });
+
+              return changed ? nextKeys : previousKeys;
+            });
+          }
         },
         {
           threshold: 0.18,
@@ -246,17 +265,14 @@ export default function ServicesPage() {
             {plans.map((plan, index) => (
               <button
                 className={`service-plan-tile-playground code-build-card reveal ${
-                  pressedPlanId === plan.id ? "touching" : ""
+                  builtCardKeys.has(`plan-${plan.id}`) ? "code-built" : ""
                 }`}
                 data-code-build-card
+                data-code-build-key={`plan-${plan.id}`}
                 style={{ "--delay": `${index * 90}ms` } as React.CSSProperties}
                 type="button"
                 key={plan.id}
                 onClick={() => setSelectedPlan(plan)}
-                onPointerDown={() => setPressedPlanId(plan.id)}
-                onPointerUp={() => setPressedPlanId(null)}
-                onPointerLeave={() => setPressedPlanId(null)}
-                onPointerCancel={() => setPressedPlanId(null)}
               >
                 <div className="code-build-overlay" aria-hidden="true">
                   <span>{`const plan = "Tier ${plan.tier_number}";`}</span>
@@ -343,8 +359,11 @@ export default function ServicesPage() {
         <div className="addon-grid-playground">
           {addons.map((addon, index) => (
             <article
-              className="addon-card-playground code-build-card reveal"
+              className={`addon-card-playground code-build-card reveal ${
+                builtCardKeys.has(`addon-${addon.id}`) ? "code-built" : ""
+              }`}
               data-code-build-card
+              data-code-build-key={`addon-${addon.id}`}
               style={{ "--delay": `${index * 45}ms` } as React.CSSProperties}
               key={addon.id}
             >
