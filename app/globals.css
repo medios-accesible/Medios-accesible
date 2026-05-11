@@ -1,4 +1,3 @@
-
 :root {
   --bg: #02040c;
   --black: #03040a;
@@ -8461,248 +8460,819 @@ textarea:focus {
   }
 }
 /* =========================================================
-   CLIENT PORTAL MOBILE LAYOUT CUT FIX
-   Keeps the global hamburger, removes the old portal sidebar
-   on mobile, and prevents panels/contact rows from overflowing.
+   CLIENT PORTAL APP-STYLE MOBILE REDESIGN
    ========================================================= */
 
-@media (max-width: 768px) {
-  .portal-dashboard-page {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    min-height: 100svh !important;
-    overflow-x: hidden !important;
-    padding: 0 !important;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.client-app-page {
+  min-height: 100svh;
+  padding: 16px 16px 104px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(0, 229, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 90% 24%, rgba(181, 108, 255, 0.18), transparent 34%),
+    linear-gradient(180deg, #05000d 0%, #070019 48%, #020006 100%);
+  overflow-x: hidden;
+}
+
+.client-app-page a {
+  text-decoration: none;
+}
+
+.client-app-shell {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.client-app-loading-card,
+.client-app-hero-card,
+.client-app-progress-card,
+.client-app-update-card,
+.client-app-list-card,
+.client-app-chat-card,
+.client-app-settings-card,
+.client-app-upload-card,
+.client-app-presence-card,
+.client-app-tutorial-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.045)),
+    rgba(6, 0, 18, 0.82);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.32), inset 0 0 36px rgba(0, 229, 255, 0.055);
+  backdrop-filter: blur(18px);
+}
+
+.client-app-loading-card {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  border-radius: 30px;
+}
+
+.client-app-topbar,
+.client-app-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.client-app-topbar {
+  padding: 2px 0 4px;
+}
+
+.client-return-site-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  border-radius: 999px;
+  color: #79f3ff;
+  background: rgba(0, 229, 255, 0.07);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.client-settings-link,
+.client-app-page-header > a {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.1);
+  font-weight: 900;
+}
+
+.client-app-hero-card,
+.client-app-progress-card,
+.client-app-update-card,
+.client-app-list-card,
+.client-app-chat-card,
+.client-app-settings-card,
+.client-app-upload-card {
+  border-radius: 30px;
+  padding: 20px;
+}
+
+.client-app-hero-card {
+  display: grid;
+  gap: 16px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(181, 108, 255, 0.22), transparent 36%),
+    radial-gradient(circle at 0% 100%, rgba(0, 229, 255, 0.18), transparent 35%),
+    rgba(6, 0, 18, 0.86);
+}
+
+.client-app-kicker {
+  width: fit-content;
+  margin: 0 0 8px;
+  padding: 7px 10px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 999px;
+  color: #79f3ff;
+  background: rgba(0, 229, 255, 0.08);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.client-app-hero-card h1,
+.client-app-page-header h1,
+.client-app-progress-card h2,
+.client-app-update-card h2,
+.client-app-list-card h2,
+.client-app-tutorial-card h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 8vw, 3.1rem);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+}
+
+.client-app-hero-card p,
+.client-app-page-header p,
+.client-app-progress-copy p,
+.client-app-update-card p,
+.client-app-empty-state,
+.client-app-list-card p,
+.client-app-tutorial-card p,
+.client-app-upload-card p,
+.client-app-settings-card p {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.55;
+}
+
+.client-app-presence,
+.client-app-presence-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.client-app-presence span,
+.client-app-presence-card span {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #ffcc66;
+  box-shadow: 0 0 14px rgba(255, 204, 102, 0.6);
+}
+
+.client-app-presence.is-online span,
+.client-app-presence-card.is-online span {
+  background: #00ff88;
+  box-shadow: 0 0 14px rgba(0, 255, 136, 0.65);
+}
+
+.client-app-presence-card {
+  width: 100%;
+  border-radius: 24px;
+  padding: 14px 16px;
+}
+
+.client-app-tutorial-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  width: 100%;
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  border-radius: 999px;
+  color: #79f3ff;
+  background: rgba(0, 229, 255, 0.075);
+  font-weight: 900;
+}
+
+.client-app-tutorial-button span:first-child {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  color: #05000d;
+  background: linear-gradient(135deg, #00e5ff, #ffffff 45%, #b56cff);
+}
+
+.client-app-tutorial-overlay,
+.client-app-tutorial-backdrop {
+  position: fixed;
+  inset: 0;
+}
+
+.client-app-tutorial-overlay {
+  z-index: 300;
+  display: grid;
+  place-items: end center;
+  padding: 18px;
+}
+
+.client-app-tutorial-backdrop {
+  background: rgba(0, 0, 0, 0.64);
+  backdrop-filter: blur(10px);
+}
+
+.client-app-tutorial-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 420px);
+  padding: 24px;
+  border-radius: 32px;
+}
+
+.client-app-tutorial-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.client-app-tutorial-icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 16px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #00e5ff, #ffffff 42%, #b56cff);
+  color: #05000d;
+  font-size: 1.7rem;
+}
+
+.client-app-tutorial-progress {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+  margin: 20px 0;
+}
+
+.client-app-tutorial-progress span {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.client-app-tutorial-progress span.is-active {
+  background: #79f3ff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.45);
+}
+
+.client-app-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.client-app-card-head > strong,
+.client-app-billing-grid article strong {
+  color: transparent;
+  background: linear-gradient(135deg, #00e5ff, #ffffff 40%, #b56cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.client-app-progress-ring-area {
+  display: grid;
+  grid-template-columns: 118px 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.client-app-progress-ring {
+  --progress: 0%;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(7, 0, 18, 0.96) 56%, transparent 57%),
+    conic-gradient(#00e5ff var(--progress), rgba(255, 255, 255, 0.12) 0);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.18);
+}
+
+.client-app-progress-ring span {
+  font-size: 1.35rem;
+  font-weight: 1000;
+}
+
+.client-app-progress-copy span {
+  color: #79f3ff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.client-app-progress-copy h3 {
+  margin: 6px 0 0;
+  font-size: 1.25rem;
+  line-height: 1.05;
+}
+
+.client-app-quick-grid,
+.client-app-action-grid,
+.client-app-billing-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.client-app-quick-grid,
+.client-app-billing-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.client-app-mini-card,
+.client-app-action-grid a,
+.client-app-billing-grid article,
+.client-app-record-row,
+.client-app-file-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 28px rgba(0, 229, 255, 0.035);
+}
+
+.client-app-mini-card {
+  min-height: 132px;
+  padding: 16px;
+  border-radius: 26px;
+}
+
+.client-app-mini-card span {
+  display: block;
+  margin-bottom: 14px;
+  font-size: 1.45rem;
+}
+
+.client-app-mini-card strong {
+  display: block;
+  font-size: 1.5rem;
+}
+
+.client-app-mini-card p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.82rem;
+}
+
+.client-app-update-stack,
+.client-app-record-list,
+.client-app-file-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.client-app-update-stack > div {
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.client-app-update-stack strong {
+  color: #fff;
+  font-size: 0.86rem;
+}
+
+.client-app-update-stack p {
+  margin-top: 6px;
+  font-size: 0.88rem;
+}
+
+.client-app-update-stack .is-highlighted {
+  border-color: rgba(0, 229, 255, 0.22);
+  background: rgba(0, 229, 255, 0.08);
+}
+
+.client-app-action-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.client-app-action-grid.is-three {
+  grid-template-columns: 1fr;
+}
+
+.client-app-action-grid a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 58px;
+  padding: 0 14px;
+  border-radius: 20px;
+  font-weight: 900;
+}
+
+.client-app-signout,
+.client-app-primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  width: 100%;
+  border-radius: 999px;
+  color: #05000d;
+  background: linear-gradient(135deg, #00e5ff, #ffffff 45%, #b56cff);
+  font-weight: 1000;
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.24);
+}
+
+.client-app-signout {
+  color: rgba(255, 255, 255, 0.76);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.client-app-page-header {
+  margin-bottom: 2px;
+}
+
+.client-app-page-header h1 {
+  margin-bottom: 6px;
+}
+
+.client-app-chat-shell {
+  min-height: calc(100svh - 120px);
+}
+
+.client-app-chat-card {
+  min-height: 45svh;
+  padding: 16px;
+}
+
+.client-app-message-thread {
+  display: grid;
+  gap: 12px;
+}
+
+.client-app-message-bubble {
+  max-width: 84%;
+  padding: 12px 14px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.client-app-message-bubble.is-client {
+  justify-self: end;
+  color: #05000d;
+  background: linear-gradient(135deg, #00e5ff, #ffffff 45%, #b56cff);
+}
+
+.client-app-message-bubble.is-admin {
+  justify-self: start;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.client-app-message-bubble > span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 1000;
+  opacity: 0.72;
+}
+
+.client-app-message-bubble p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.client-app-message-bubble time {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.68rem;
+  opacity: 0.65;
+}
+
+.client-app-message-bubble img {
+  max-width: 220px;
+  margin-top: 8px;
+  border-radius: 16px;
+}
+
+.client-app-composer {
+  position: sticky;
+  bottom: 88px;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  gap: 8px;
+  align-items: end;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(5, 0, 14, 0.86);
+  backdrop-filter: blur(18px);
+}
+
+.client-app-photo-button,
+.client-app-composer button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: #05000d;
+  background: #fff;
+  font-weight: 1000;
+}
+
+.client-app-photo-button input {
+  display: none;
+}
+
+.client-app-composer textarea {
+  min-height: 44px;
+  max-height: 120px;
+  padding: 12px 4px;
+  border: 0;
+  outline: none;
+  resize: none;
+  color: #fff;
+  background: transparent;
+  font-size: 16px;
+}
+
+.client-app-composer button {
+  background: linear-gradient(135deg, #00e5ff, #b56cff);
+}
+
+.client-app-file-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(0, 229, 255, 0.08);
+  color: #79f3ff;
+  font-size: 0.84rem;
+}
+
+.client-app-upload-card {
+  display: grid;
+  place-items: center;
+  min-height: 184px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.client-app-upload-card input {
+  display: none;
+}
+
+.client-app-upload-card > span,
+.client-app-avatar-upload > span {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 12px;
+  border-radius: 22px;
+  color: #05000d;
+  background: linear-gradient(135deg, #00e5ff, #ffffff 45%, #b56cff);
+  font-size: 1.55rem;
+  font-weight: 1000;
+}
+
+.client-app-file-card,
+.client-app-record-row {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 74px;
+  padding: 12px;
+  border-radius: 20px;
+}
+
+.client-app-file-card > span,
+.client-app-record-row > span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 16px;
+  background: rgba(0, 229, 255, 0.1);
+}
+
+.client-app-file-card strong,
+.client-app-record-row strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.client-app-file-card p,
+.client-app-record-row p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+.client-app-record-row b {
+  color: #79f3ff;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.client-app-billing-grid article {
+  min-height: 130px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.client-app-billing-grid article span {
+  display: block;
+  margin-bottom: 18px;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.client-app-settings-card {
+  display: grid;
+  gap: 14px;
+}
+
+.client-app-settings-card label:not(.client-app-avatar-upload) {
+  display: grid;
+  gap: 8px;
+}
+
+.client-app-settings-card label > span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.client-app-settings-card input {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  outline: none;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 16px;
+}
+
+.client-app-settings-card input:disabled {
+  opacity: 0.62;
+}
+
+.client-app-avatar-upload {
+  display: grid;
+  place-items: center;
+  min-height: 164px;
+  border: 1px dashed rgba(0, 229, 255, 0.28);
+  border-radius: 24px;
+  background: rgba(0, 229, 255, 0.055);
+  text-align: center;
+}
+
+.client-app-avatar-upload input {
+  display: none;
+}
+
+.client-app-bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 220;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  width: min(calc(100% - 24px), 440px);
+  padding: 8px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  background: rgba(5, 0, 14, 0.86);
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.44), inset 0 0 32px rgba(0, 229, 255, 0.05);
+  backdrop-filter: blur(22px);
+}
+
+.client-app-nav-item {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  height: 48px;
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.74);
+  background: rgba(255, 255, 255, 0.035);
+  font-size: 1.25rem;
+  transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.client-app-nav-item.is-home {
+  height: 58px;
+  margin-top: -12px;
+  border: 1px solid rgba(0, 229, 255, 0.26);
+  border-radius: 22px;
+  color: #05000d;
+  background: linear-gradient(135deg, #00e5ff, #ffffff 40%, #b56cff);
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.28);
+  font-size: 1.4rem;
+}
+
+.client-app-nav-item.is-active:not(.is-home) {
+  color: #79f3ff;
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.06);
+}
+
+.client-app-nav-item:active {
+  transform: scale(0.96);
+}
+
+@media (min-width: 769px) {
+  .client-app-page {
+    padding-top: 28px;
   }
 
-  .portal-dashboard-page .portal-sidebar {
-    display: none !important;
+  .client-app-billing-grid,
+  .client-app-quick-grid,
+  .client-app-action-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .portal-dashboard-main {
-    width: 100% !important;
-    max-width: 100vw !important;
-    min-width: 0 !important;
-    padding: calc(env(safe-area-inset-top, 0px) + 86px) 16px 42px !important;
-    overflow-x: hidden !important;
-  }
-
-  .portal-dashboard-header,
-  .portal-content-grid,
-  .portal-left-column,
-  .portal-right-column,
-  .portal-stat-grid,
-  .admin-stat-grid,
-  .admin-project-list,
-  .portal-message-list,
-  .portal-admin-update-list,
-  .portal-tool-list,
-  .portal-help-list {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    overflow-x: hidden !important;
-  }
-
-  .portal-dashboard-header {
-    display: grid !important;
-    gap: 18px !important;
-    margin-bottom: 22px !important;
-  }
-
-  .portal-dashboard-header h1 {
-    max-width: 100% !important;
-    overflow-wrap: anywhere !important;
-  }
-
-  .portal-dashboard-header > div > span,
-  .portal-dashboard-header p {
-    max-width: 100% !important;
-    overflow-wrap: anywhere !important;
-  }
-
-  .portal-header-actions,
-  .portal-card-actions,
-  .client-project-actions,
-  .portal-actions {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    gap: 10px !important;
-  }
-
-  .portal-top-button,
-  .portal-card-actions a,
-  .portal-card-actions button,
-  .portal-secondary-button,
-  .client-project-actions a,
-  .client-project-actions button {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    justify-content: center !important;
-    text-align: center !important;
-    white-space: normal !important;
-    overflow-wrap: anywhere !important;
-  }
-
-  .portal-dashboard-panel,
-  .portal-stat-card,
-  .client-active-project-card,
-  .client-project-card,
-  .client-project-updates-panel,
-  .client-project-portal-preview,
-  .portal-message-panel,
-  .portal-thread-card,
-  .portal-update-card,
-  .portal-update-detail {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    overflow-x: hidden !important;
-    box-sizing: border-box !important;
-  }
-
-  .portal-dashboard-panel {
-    padding: 20px !important;
-    border-radius: 24px !important;
-  }
-
-  .portal-panel-head {
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: flex-start !important;
-    flex-wrap: wrap !important;
-    gap: 10px !important;
-    width: 100% !important;
-    min-width: 0 !important;
-  }
-
-  .portal-panel-head h2,
-  .portal-dashboard-panel h2 {
-    min-width: 0 !important;
-    max-width: 100% !important;
-    font-size: clamp(1.55rem, 7vw, 2.2rem) !important;
-    line-height: 1.05 !important;
-    overflow-wrap: anywhere !important;
-  }
-
-  .portal-panel-head a {
-    max-width: 100% !important;
-    white-space: normal !important;
-    overflow-wrap: anywhere !important;
-  }
-
-  .client-project-header,
-  .portal-message-row,
-  .admin-client-row {
-    grid-template-columns: 48px minmax(0, 1fr) !important;
-    width: 100% !important;
-    min-width: 0 !important;
-  }
-
-  .client-project-header > div,
-  .portal-message-row > div,
-  .admin-client-row > div {
-    min-width: 0 !important;
-  }
-
-  .client-project-header h3,
-  .client-project-header p,
-  .portal-message-row strong,
-  .portal-message-row p,
-  .admin-client-row strong,
-  .admin-client-row p {
-    max-width: 100% !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
-  }
-
-  .project-data-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
-    width: 100% !important;
-    min-width: 0 !important;
-  }
-
-  .project-data-grid div {
-    min-width: 0 !important;
-    padding: 14px 0 !important;
-  }
-
-  .project-data-grid strong,
-  .project-data-grid span,
-  .portal-update-card h3,
-  .portal-update-card p,
-  .portal-update-detail strong,
-  .portal-update-detail p {
-    max-width: 100% !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
-  }
-
-  .portal-help-list {
-    display: grid !important;
-    gap: 12px !important;
-    margin: 18px 0 !important;
-  }
-
-  .portal-help-list a,
-  .portal-help-list div,
-  .portal-tool-list a {
-    display: grid !important;
-    grid-template-columns: 46px minmax(0, 1fr) !important;
-    align-items: center !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    gap: 12px !important;
-    padding: 12px !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-  }
-
-  .portal-help-list a > div,
-  .portal-help-list div > div,
-  .portal-tool-list a > div {
-    min-width: 0 !important;
-    max-width: 100% !important;
-  }
-
-  .portal-help-list strong,
-  .portal-help-list p,
-  .portal-tool-list strong,
-  .portal-tool-list p {
-    display: block !important;
-    max-width: 100% !important;
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
-    white-space: normal !important;
-  }
-
-  .portal-help-list span,
-  .portal-tool-list span {
-    width: 46px !important;
-    height: 46px !important;
-    min-width: 46px !important;
-  }
-
-  .developer-status-layout {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 14px !important;
-  }
-
-  .developer-status-avatar {
-    width: 64px !important;
-    height: 64px !important;
-  }
-
-  .portal-dashboard-footer {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-wrap: anywhere !important;
+  .client-app-action-grid.is-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+@media (max-width: 420px) {
+  .client-app-page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .client-app-progress-ring-area {
+    grid-template-columns: 96px 1fr;
+    gap: 12px;
+  }
+
+  .client-app-progress-ring {
+    width: 92px;
+    height: 92px;
+  }
+
+  .client-app-bottom-nav {
+    width: min(calc(100% - 18px), 420px);
+    gap: 4px;
+    padding: 7px;
+  }
+
+  .client-app-nav-item {
+    height: 46px;
+    font-size: 1.15rem;
+  }
+
+  .client-app-nav-item.is-home {
+    height: 56px;
+  }
