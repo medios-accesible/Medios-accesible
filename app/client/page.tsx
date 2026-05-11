@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import ClientMobileNav from "../../components/ClientMobileNav";
+import ClientTutorial from "../../components/ClientTutorial";
 import { supabase } from "../../lib/supabaseClient";
 
 type Profile = {
@@ -177,8 +179,8 @@ export default function ClientDashboardPage() {
 
   if (loading) {
     return (
-      <main className="portal-dashboard-page">
-        <section className="portal-dashboard-loading">
+      <main className="client-app-page">
+        <section className="client-app-loading-card">
           <p>Loading client portal...</p>
         </section>
       </main>
@@ -186,348 +188,115 @@ export default function ClientDashboardPage() {
   }
 
   return (
-    <main className="portal-dashboard-page">
-      <aside className="portal-sidebar">
-        <Link className="portal-sidebar-brand" href="/">
-          <div className="portal-brand-mark">&lt;/&gt;</div>
-          <div>
-            <strong>{getGreetingName(profile)}</strong>
-            <span>Client Portal</span>
-          </div>
-        </Link>
-
-        <nav className="portal-sidebar-nav">
-          <Link className="active" href="/client">
-            <span>▦</span> Dashboard
-          </Link>
-          <a href="#active-project">
-            <span>□</span> Projects
-          </a>
-          <Link href="/client/messages">
-            <span>☵</span> Messages
-            {unreadMessages.length > 0 && <b>{unreadMessages.length}</b>}
-          </Link>
-          <a href="#project-updates">
-            <span>◎</span> Updates
-          </a>
-          <a href="#files">
-            <span>▱</span> Files
-          </a>
-          <a href="#billing">
-            <span>▣</span> Invoices
-          </a>
-          <a href="#settings">
-            <span>⚙</span> Settings
-          </a>
-        </nav>
-
-        <div className="portal-sidebar-actions">
-          <p>Quick Actions</p>
-
-          <Link href="/client/messages">
-            <span>＋</span> New Message
+    <main className="client-app-page client-app-home-page">
+      <section className="client-app-shell">
+        <header className="client-app-topbar">
+          <Link className="client-return-site-link" href="/">
+            ← Return to website
           </Link>
 
-          <Link href="/client/messages">
-            <span>⟳</span> Request Update
+          <Link className="client-settings-link" href="/client/settings" aria-label="Open settings">
+            ⚙
           </Link>
-        </div>
-
-        <div className="portal-sidebar-help">
-          <p>Need help?</p>
-          <span>We&apos;re here to help you</span>
-          <a href="mailto:mediosaccesible@gmail.com">Contact Support</a>
-        </div>
-      </aside>
-
-      <section className="portal-dashboard-main">
-        <header className="portal-dashboard-header">
-          <div>
-            <p>Welcome back,</p>
-            <h1>{getGreetingName(profile)} <span>👋</span></h1>
-            <span>{profile?.email}</span>
-          </div>
-
-          <div className="portal-header-actions">
-            <Link className="portal-top-button is-home" href="/">
-              ⌂ Home
-            </Link>
-
-            <button className="portal-top-button" onClick={handleSignOut}>
-              ⎋ Sign Out →
-            </button>
-          </div>
         </header>
 
-        <div className="portal-stat-grid">
-          <article className="portal-stat-card">
-            <div className="portal-stat-icon">□</div>
-            <div>
-              <span>Active Projects</span>
-              <strong>{projects.length}</strong>
-              <p><i></i> Currently in progress</p>
-            </div>
-          </article>
-
-          <article className="portal-stat-card">
-            <div className="portal-stat-icon">☵</div>
-            <div>
-              <span>Messages</span>
-              <strong>{unreadMessages.length}</strong>
-              <p><i></i> Unread messages</p>
-            </div>
-          </article>
-
-          <article className="portal-stat-card">
-            <div className="portal-stat-icon">♢</div>
-            <div>
-              <span>Updates</span>
-              <strong>{latestUpdates.length}</strong>
-              <p><i></i> Recent updates</p>
-            </div>
-          </article>
-
-          <article className="portal-stat-card" id="billing">
-            <div className="portal-stat-icon">▣</div>
-            <div>
-              <span>Next Payment</span>
-              <strong>{monthlyTotal > 0 ? `$${monthlyTotal}` : "Pending"}</strong>
-              <p><i></i> Due date appears here</p>
-            </div>
-          </article>
-        </div>
-
-        <div className="portal-content-grid">
-          <div className="portal-left-column">
-            <article className="portal-dashboard-panel" id="active-project">
-              <div className="portal-panel-head">
-                <h2>Your Active Project</h2>
-              </div>
-
-              {activeProject ? (
-                <div className="client-active-project-card">
-                  <div className="client-project-header">
-                    <div className="client-project-logo">◎</div>
-
-                    <div>
-                      <h3>{activeProject.title}</h3>
-                      <p>{activeProject.stage}</p>
-                    </div>
-
-                    <span className="portal-status-pill">{activeProject.status}</span>
-                  </div>
-
-                  <div className="client-project-progress-area">
-                    <div>
-                      <span>Progress</span>
-                      <strong>{activeProject.progress}%</strong>
-                    </div>
-
-                    <div className="portal-progress-bar">
-                      <span style={{ width: `${activeProject.progress}%` }}></span>
-                    </div>
-                  </div>
-
-                  <div className="project-data-grid">
-                    <div>
-                      <span>Project Status</span>
-                      <strong>{activeProject.stage}</strong>
-                    </div>
-
-                    <div>
-                      <span>Update Queue</span>
-                      <strong>{primaryUpdate?.title || "No update yet"}</strong>
-                    </div>
-
-                    <div>
-                      <span>Current Plan</span>
-                      <strong>
-                        {activeProject.monthly_price
-                          ? `$${activeProject.monthly_price}/mo`
-                          : activeProject.plan || "Active"}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <span>Preview Link</span>
-                      <strong>{activeProject.site_url ? "Ready" : "Pending"}</strong>
-                    </div>
-
-                    <div>
-                      <span>Next Steps</span>
-                      <strong>{primaryUpdate?.next_steps || "Waiting for update"}</strong>
-                    </div>
-
-                    <div>
-                      <span>Last Updated</span>
-                      <strong>{formatDate(primaryUpdate?.created_at)}</strong>
-                    </div>
-                  </div>
-
-                  <div className="portal-card-actions">
-                    {activeProject.site_url ? (
-                      <a href={activeProject.site_url} target="_blank" rel="noreferrer">
-                        View Project Details →
-                      </a>
-                    ) : (
-                      <Link href="/client/messages">View Project Details →</Link>
-                    )}
-
-                    <Link className="ghost" href="/client/messages">
-                      Request an Update ⟳
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <p>No projects have been assigned yet.</p>
-              )}
-            </article>
-
-            <article className="portal-dashboard-panel">
-              <div className="portal-panel-head">
-                <h2>Messages</h2>
-                <Link href="/client/messages">View all messages →</Link>
-              </div>
-
-              {unreadMessages.length === 0 ? (
-                <p>No unread messages.</p>
-              ) : (
-                <div className="portal-message-list">
-                  {unreadMessages.slice(0, 3).map((message) => (
-                    <Link href="/client/messages" className="portal-message-row" key={message.id}>
-                      <div className="portal-avatar">MA</div>
-
-                      <div>
-                        <strong>Medios Accesible</strong>
-                        <p>{message.body || "Project message received."}</p>
-                      </div>
-
-                      <time>{formatDate(message.created_at)}</time>
-                      <i></i>
-                    </Link>
-                  ))}
-                </div>
-              )}
-
-              <Link className="portal-secondary-button" href="/client/messages">
-                Open All Messages →
-              </Link>
-            </article>
-
-            <article className="portal-dashboard-panel developer-portal-panel">
-              <h2>Developer Status</h2>
-
-              <div className="developer-status-layout">
-                <div className="developer-status-avatar">♙</div>
-
-                <div>
-                  <strong className={developerAtDesk ? "is-online" : "is-away"}>
-                    {developerAtDesk ? "At desk" : "Away from desk"}
-                  </strong>
-
-                  <p>
-                    {developerAtDesk
-                      ? "The developer is currently at his desk. Message me here in the client portal."
-                      : "The developer is currently away from his desk. Please call or send email for a timely response."}
-                  </p>
-                </div>
-              </div>
-
-              <div className="portal-card-actions">
-                <a href="tel:+17879074302">Call (787) 907-4302</a>
-                <a className="ghost" href="mailto:mediosaccesible@gmail.com">Send Email</a>
-              </div>
-            </article>
+        <section className="client-app-hero-card">
+          <div>
+            <p className="client-app-kicker">Client Portal</p>
+            <h1>Welcome back, {getGreetingName(profile)}</h1>
+            <p>{profile?.email}</p>
           </div>
 
-          <aside className="portal-right-column">
-            <article className="portal-dashboard-panel" id="project-updates">
-              <div className="portal-panel-head">
-                <h2>Project Updates</h2>
-                <a href="#project-updates">View all updates →</a>
-              </div>
+          <div className={`client-app-presence ${developerAtDesk ? "is-online" : "is-away"}`}>
+            <span></span>
+            {developerAtDesk ? "Developer online" : "Developer away"}
+          </div>
+        </section>
 
-              {primaryUpdate ? (
-                <div className="portal-update-card">
-                  <div className="portal-update-meta">
-                    <span>{primaryUpdate.update_type}</span>
-                    <time>{formatDate(primaryUpdate.created_at)}</time>
-                  </div>
+        <ClientTutorial />
 
-                  <h3>{primaryUpdate.title}</h3>
-                  <p>{primaryUpdate.summary}</p>
+        <section className="client-app-progress-card">
+          <div className="client-app-card-head">
+            <div>
+              <p className="client-app-kicker">Progress</p>
+              <h2>{activeProject?.title || "No active project yet"}</h2>
+            </div>
 
-                  <div className="portal-update-detail">
-                    <strong>Completed:</strong>
-                    <p>{primaryUpdate.completed_work || "N/A"}</p>
-                  </div>
+            <strong>{activeProject ? `${activeProject.progress}%` : "0%"}</strong>
+          </div>
 
-                  <div className="portal-update-detail">
-                    <strong>Next:</strong>
-                    <p>{primaryUpdate.next_steps || "N/A"}</p>
-                  </div>
+          <div className="client-app-progress-ring-area">
+            <div
+              className="client-app-progress-ring"
+              style={{ "--progress": `${activeProject?.progress || 0}%` } as React.CSSProperties}
+            >
+              <span>{activeProject?.progress || 0}%</span>
+            </div>
 
-                  <div className="portal-update-detail highlight">
-                    <strong>Action needed from you:</strong>
-                    <p>{primaryUpdate.client_action_needed || "N/A"}</p>
-                  </div>
+            <div className="client-app-progress-copy">
+              <span>{activeProject?.status || "Pending"}</span>
+              <h3>{activeProject?.stage || "Project setup pending"}</h3>
+              <p>{primaryUpdate?.next_steps || "Your next project update will appear here."}</p>
+            </div>
+          </div>
+        </section>
 
-                  <div className="portal-update-detail warning">
-                    <strong>Blockers:</strong>
-                    <p>{primaryUpdate.blockers || "N/A"}</p>
-                  </div>
+        <section className="client-app-quick-grid">
+          <Link className="client-app-mini-card" href="/client/messages">
+            <span>💬</span>
+            <strong>{unreadMessages.length}</strong>
+            <p>Unread Messages</p>
+          </Link>
 
-                  <div className="portal-update-detail">
-                    <strong>Timing:</strong>
-                    <p>{primaryUpdate.estimated_completion || "Unknown at this time"}</p>
-                  </div>
-                </div>
-              ) : (
-                <p>No project updates posted yet.</p>
-              )}
-            </article>
+          <Link className="client-app-mini-card" href="/client/billing">
+            <span>💳</span>
+            <strong>{monthlyTotal > 0 ? `$${monthlyTotal}` : "Pending"}</strong>
+            <p>Current Billables</p>
+          </Link>
+        </section>
 
-            <article className="portal-dashboard-panel" id="files">
-              <h2>Need Help?</h2>
-              <p>We&apos;re here to support you</p>
+        <section className="client-app-update-card">
+          <div className="client-app-card-head">
+            <div>
+              <p className="client-app-kicker">Latest Update</p>
+              <h2>{primaryUpdate?.title || "No update posted yet"}</h2>
+            </div>
+            <time>{formatDate(primaryUpdate?.created_at)}</time>
+          </div>
 
-              <div className="portal-help-list">
-                <a href="mailto:mediosaccesible@gmail.com">
-                  <span>✉</span>
-                  <div>
-                    <strong>Email</strong>
-                    <p>mediosaccesible@gmail.com</p>
-                  </div>
-                </a>
+          <p>{primaryUpdate?.summary || "Once an update is posted, you will see the full summary here."}</p>
 
-                <a href="tel:+17879074302">
-                  <span>☏</span>
-                  <div>
-                    <strong>Phone</strong>
-                    <p>(787) 907-4302</p>
-                  </div>
-                </a>
+          <div className="client-app-update-stack">
+            <div>
+              <strong>Completed</strong>
+              <p>{primaryUpdate?.completed_work || "Waiting for update"}</p>
+            </div>
 
-                <div>
-                  <span>◷</span>
-                  <div>
-                    <strong>Hours</strong>
-                    <p>Mon - Fri: 8:00am - 6:00pm</p>
-                  </div>
-                </div>
-              </div>
+            <div>
+              <strong>Next</strong>
+              <p>{primaryUpdate?.next_steps || "Waiting for update"}</p>
+            </div>
 
-              <a className="portal-secondary-button" href="mailto:mediosaccesible@gmail.com">
-                Contact Support →
-              </a>
-            </article>
-          </aside>
-        </div>
+            <div className="is-highlighted">
+              <strong>Action needed</strong>
+              <p>{primaryUpdate?.client_action_needed || "No action needed right now"}</p>
+            </div>
+          </div>
+        </section>
 
-        <footer className="portal-dashboard-footer">
-          © 2026 Medios Accesible. All rights reserved.
-        </footer>
+        <section className="client-app-action-grid">
+          <Link href="/client/documents">📝 Documents</Link>
+          <Link href="/client/billing">💳 Billing</Link>
+          <Link href="/client/messages">💬 Messages</Link>
+          <Link href="/client/files">📁 Files</Link>
+        </section>
+
+        <button className="client-app-signout" type="button" onClick={handleSignOut}>
+          Sign Out
+        </button>
       </section>
+
+      <ClientMobileNav />
     </main>
   );
 }
