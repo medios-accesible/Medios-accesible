@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AdminMobileNav from "../../../components/AdminMobileNav";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
@@ -565,6 +566,7 @@ export default function AdminServicesPage() {
           </div>
         )}
       </section>
+          <AdminMobileNav />
     </main>
   );
 }
