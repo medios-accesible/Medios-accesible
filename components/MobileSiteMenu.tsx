@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const mobileLinks = [
   { label: "Home", href: "/" },
@@ -16,6 +16,9 @@ const mobileLinks = [
 export default function MobileSiteMenu() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const shouldHideGlobalMenu =
+    pathname.startsWith("/admin") || pathname.startsWith("/client");
 
   function closeMenu() {
     setMenuOpen(false);
@@ -40,7 +43,7 @@ export default function MobileSiteMenu() {
     return () => window.removeEventListener("keydown", handleEscape);
   }, []);
 
-  if (pathname.startsWith("/client")) {
+  if (shouldHideGlobalMenu) {
     return null;
   }
 
